@@ -1,0 +1,189 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+  <meta http-equiv="content-type" content="text/html; charset=windows-1250">
+  <meta name="generator" content="PSPad editor, www.pspad.com">
+  <title></title>
+  </head>
+  <body>
+<h2>Users' guide</h2>
+<h3>Settings (shortcut key "S")</h3>
+<img width="404" height="180" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="settings_dialog.png" alt="" />
+
+<p>
+First it is recomended to set up the programm. Click on "Settings" (shortcut key "s"). Set the <b>language</b> you want to translate to. Set also the <b>name and e-mail of translator</b>. It will be used only to be included in translated files, to let know further translators who did the translations before.
+<p>
+<b>do not show plugins without translate file</b> - some plugins, especially templates, have no language files, no messages to translate. In the list of plugins, they are only for your information. Checking this option will hide them in the list.
+<p>
+<b>WWW address with application</b> - Here you can specify our own server (folder) that holds newest version of application.
+
+<h3>Main window</h3>
+<h4>"Update plugin list" button (shortcut key "U")</h4>
+After clicking, the application will connect to the internet repository (the same as Spartacus uses), download the list of plugins and will try to know, which plugin includes translated language files. In this moment the application does not know the content of language files. It only knows, that some translated file exists. To prospect language files it is necessary to download them by clicking on following button.
+
+<h4>"Download files" button (shortcut key "D")</h4>
+<p>The program will download language files - english files and also the files in selected local language (see Settings) and will compare them by content. Downloading can be lengthy, therefore there is progress bar that informs you about the downloading progress.
+<p>
+<img width="540" height="90" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="download_progress.png" alt="" />
+<p>In version 1.6 was added feature, that downloads only changed files. Downloading is now a bit faster. Also you can now stop the downloading by bancel button. Since mentioned version, documentation files (documentation_xx.html, readmes, ChangeLogs) are also downloaded to enable you to translate also this documentation. See section <a href="#documentation">Documentation translations</a>.
+</p>
+
+<h4>"Compare files by content" button (shortcut key "C")</h4>
+If there comes up a situation when files are not compared (e.g. after you translate <a href="#documentation">documentation files</a>), you can force the comparison by clicking this button. The programm compares locally stored files, nothing is downloaded from internet.
+
+<h4>Plugin table</h4>
+<ul>
+<li>double-click on the row, or select the row and press "enter" - will open translation window</li>
+
+<li>"Type" column:
+   <ol>
+   <li>system - system file, the core language file that serendipity uses</li>
+   <li>event - language file for event plugin</li>
+   <li>sidebar - language file for sidebar plugin</li>
+   <li>template - language file for template</li>
+   </ol>
+</li>
+
+<li>"Internal" column - checked plugins are part of serendipity distribution, others are available through web or Spartacus</li>
+
+<li>"en" column and "loc" column - number of language constants (rows) in english (local) language file. Looking this you can choose if you want to translate big plugins with lots of rows, or you can choose some small plugin if you don't have much time to translate big file. You can also know, how many messages are in partially translated file and how many of them it is necesary to translate.</li>
+
+<li>"Status" column and "Translate status" column:
+   <ol>
+   <li><img width="12" height="12" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="../icons/ok.png" alt="" />  ok - all messages from english file are present in local language file, this file is completely translated. Also the number in "en" column is the same as the number in "loc" column.</li>
+   <li><img width="12" height="12" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="../icons/no.png" alt="" />  no - local language file does not exist. It is possible to translate (create) it.</li>
+   <li><img width="12" height="12" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="../icons/partial.png" alt="" />  partial - some of the messages in english file are present in local language file. It means the number in "en" column does not match the number in "loc" column. Some of the messages must be translated or deleted.</li>
+   <li><img width="12" height="12" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="../icons/problem.png" alt="" />  problem - the plugin does not have any english language file. There is nothing to translate.</li>
+   </ol>
+
+<p>
+"Status" column compares downloaded file (from "plugins" directory) with english one.
+<p>
+"Translate status" column compares translated file (from "plugins_translated" directory) with english one.
+<p>
+
+   <ol>
+   These situations are possible.
+   <li>If one plugin has "Status" partial or no, and "translate status" is ok, then we have already translated the file, but it wasn't uploaded to the internet repository. It is time to publish it on serendipity forum.</li>
+   <li>"Status" is ok, "Translate status" is no - it means that the plugin is well translated, but we didn't do the translation. There is no need to translate it any more.</li>
+   <li>"Status" is partial or no and "Translate status" is partial. It means that we have alredy translated the file, but that we didn't finish the job. It needs to finish the translation and to publish the result on serendipity forum.</li>
+   </ol>
+
+</li>
+
+<li>"Documentation" column:
+	Displays status of translation of documentation, which can be following:
+   <ol>
+   <li><img width="12" height="12" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="../icons/ok.png" alt="" />  ok - Documentation file in local (e.g. czech) language downloaded from server is younger than english documentation file, therefore it can be supposed that this translation is complete and up to date.</li>
+   <li><img width="12" height="12" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="../icons/local.png" alt="" />  local - Documentation file in local (e.g. czech) does not exist on server, but exists on local computer and is younger than english documentation file. It means that you did the translation, which is still up to date, but you did not publish the translation to the world.</li>
+   <li><img width="12" height="12" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="../icons/no.png" alt="" />  no - English documentation file exist, but file in local language does not. It is time to translate this documentation.</li>
+   <li><img width="12" height="12" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="../icons/partial.png" alt="" />  partial - Both english and local language documentation files were found on server and downloaded, but the local language documentation is older than english one. Or english file exist, translation exist on local computer, but it is older than english file. It means that english documentation was renewed and these changes were not reflected in local language documentation.</li>
+   <li><img width="12" height="12" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="../icons/problem.png" alt="" />  problem - The plugin does not have english documentation, there is nothing to translate.</li>
+   </ol>
+</li>
+</ul>
+
+<h3>Translation window</h3>
+<p>
+In the upper part of translation window, there are three fields - the name of edited message, the message in english and the message in local language.
+<p>
+Local language messages can be edited in the table with messages and also in the field with local message.
+<p>
+In the status bar, there is "original" x "modified" message. It signalises if the file has been changed or not. If the status is "modified", it is possible to save the file. The file will be stored in "plugins_translated" directory.
+<p>
+<ul>
+The translation table rows can be of 4 colors:
+<li>red - the message is not translated in local language</li>
+<li>green - the message exists in local language, but it is the same as in the english language file. It is highly probable, that the translator who translated the file before you, did the copy of messages, but did not translate all of them.</li>
+<li>yellow - the message exists in local language, but not in english. It is possible that it was removed in newer version of plugin. If we want to remove it from the translated file, we will delete it. Blank messages are not written in the language file during saving.</li>
+<li>white - the message exists both in english and local language file and they are different. It means translated message. Completely translated files contain only white and green messages. Sometimes the translation is the same as the english message.</li>
+</ul>
+
+<a name="documentation"></a><h3>Translation of documentation</h3>
+<p>
+Documentation for plugins can be stored in various files. It should be placed in file named "documentation_en.html", but many plugins have only readmes "readme, readme.txt, pluginReadme.txt, credits.txt" or ChangeLogs instead. All of these files are downloaded and treated as documentation files.
+</p>
+<p>
+As the format of documentation files varies a lot, you must inspect it on our own and make its translation in external text editor.
+</p>
+<p>
+If you want to profit from benefits of tracking the status of documentation and of packing new files for publishing, you should only save your translated documentation under the plugin folder in "plugins_translated" directory and save it as "documentation_xx.html" where replace "xx" by language abbreviation. 
+</p>
+<p>
+From version 1.9 the application creates automatically the UTF-8 version of documentation files, if it does not exist. However it has limitations. The UTF-8 files can be different in small things. The application converts the html meta tag defining the charset to utf-8, to display the documentation file correctly in utf-8 encoding. Also the links to local files (e.g. images) are prefixed with "../" co link to original file. Remote links (starting with "http://" or "mailto:") are not prefixed. All other changes in utf-8 files must be done manually.
+</p>
+<p>
+The documentation files in utf-8 encoding are created after clicking on <a href="#export_to_zip">"export translated files to zip file"</a> in "translations" menu.
+</p>
+
+<h2>How the program works internally</h2>
+
+<ul>
+<h3>Filling in messages already set elsewhere</h3>
+<li>In some plugins, especially templates there are some messages that are repeated (copied) from other plugins (mostly templates) frequently. The application stores all messages into its internal database during each comparison. And then if it finds untranslated message whose key is already in database, it fills in the translated message. This supports also the coherency of translation. There is less chance to translate logically the same messages differently.</li>
+</ul>
+
+<ul>
+<h3>Directories it creates</h3>
+<li>plugins - directory with downloaded language files. These files change only after clicking the "Download files" button and downloading the up to date files. It contains the same language files that are available in online plugins repository.</li>
+<li>plugins_translated - There is the result of your translation effort. The publishing of translated files is not automatic. It is up to you to publish them, mainly on serendipity forum (<a href="http://board.s9y.org">board.s9y.org</a>). The plugins are sorted in subdirectories in groups, that are important for serendipity developpers.</li>
+</ul>
+
+<ul><h3>Language file format</h3>
+<li>header - it is automatically generated, it contains the information about translation version, translator name (it is taken from Settings dialogue) and date of translation</li>
+<li>The file that is created from the scratch, the first version of the translation, has the messages sorted in the same order as in the english file.</li>
+<li>The file, that was already translated, it means when we make only the update of the file, has the same ordering of messages as the original file. The parts that are not changed, have the same format in both files. New messages are appended at the end of the file. The program tries to preserve the format of messages. It means mainly the caracters between the message name and its content in @define function. So when the main part of language file has the format "@define('BLABLAH',[tab]'blahblah message');" also the new messages will have ",[tab]" in the right place. Also the padding to some position is supported, e.g. if 'blahblah message' starts mostly on column 50, the new messages will start also on column 50.
+</li>
+</ul>
+
+<ul>
+<a name="export_to_zip"></a>
+<h3>Export to zip file</h3>
+<li>Only plugins that are completely translated are exported into zip file. It means that "Translated status" equals to "ok", and plugin is not translated yet, it means when "Status" is not "ok" or if messages in translated file are not the same as messages in downloaded file.</li>
+<li>Only files of current language are exported.</li>
+<li>Documentation files of current language are exported only if documentation status equals "local".</li>
+<li>Files are exported both in local encoding and in UTF-8 encoding.</li>
+<li>Files are organized in one zip archive in subdirectories according to their type - internal x external, plugins x templates.</li>
+</ul>
+
+
+<h2>Troubleshooting</h2>
+<ul><li>All error messages are in file "error.log"</li>
+<li>If you encounter any problem, send this error log to author of translation utility.</li>
+</ul>
+
+<h2>Changelog</h2>
+<ul>
+
+<li><b>1.0</b><br />Prerelease version - the main function were tested (plugin list downloading, basic translations)</li>
+
+<li><b>1.1</b><br />More info about translations was added (e.g. number of messages in translated file), graphical enhancement (the state of messages - translated/not translated)</li>
+
+<li><b>1.2</b><br />Changes in user interface (menu bar, settings in its proper dialogue, dialogue "about", license dialogue, help dialogue), formating of output file (e.g. resolving the new messages format)</li>
+
+<li><b>1.3</b><br />Resolving plugin list from web interface of snv/cvs repository. Export of translated files into zip archive. Statistics added.</li>
+
+<li><b>1.4</b><br />Added comparing of files after plugin list update. Reporting error messages into file added.</li>
+
+<li><b>1.5</b><br />Fixed errors with (not)downloading some files. Added filling in the messages that were already used in other plugins (templates).</li>
+
+<li><b>1.6</b><br />Added tracking of documentation files.<br />
+Added automatic updater of application.<br />
+Added function of downloading changed/new files only -> performance enhamncement.<br />
+Added possibility of cancelation of downloading.</li>
+
+<li><b>1.7</b><br />Fixed error in (not)downloading documentation files. Download dialog - saving its position + visibility enhancement.</li>
+
+<li><b>1.8</b><br />Added check of availability of cvs/svn servers. Error message is displayed if they are not reachable.</li>
+
+<li><b>1.9</b> - 2011/07/10<br />Fix to download also the files that are old only several seconds.<br />
+Fix of exporting files that have identical content, but differ in new line style (\n - unix style or \r\n - windows style). They are now supposed to be identic.<br />
+Saving of downloaded files with original timestamp - this avoids false marking of documentation files as not translated.<br />
+Added automatic conversion of documentation files into UTF-8 version.</li>
+
+<li><b>1.10</b><br />(dosud nevydáno) Oprava adresy, na kterou se připojuje při kontrole spojení na berlios.de.<br />
+Přidáno stahování souborů "todo", "copy*", "author(s)" jako dokumentace.
+</li>
+</ul>
+  </body>
+</html>

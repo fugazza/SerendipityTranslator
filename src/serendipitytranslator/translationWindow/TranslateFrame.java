@@ -1,0 +1,366 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/*
+ * TranslateFrame.java
+ *
+ * Created on 10.2.2009, 22:35:04
+ */
+
+package serendipitytranslator.translationWindow;
+
+import java.awt.Component;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.FileNotFoundException;
+import java.util.Hashtable;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableCellEditor;
+
+/**
+ *
+ * @author Vláďa
+ */
+public class TranslateFrame extends javax.swing.JFrame {
+
+    TranslateTableModel tableModel = new TranslateTableModel();
+    private Hashtable<String,String> messageDatabase = null;
+    String pluginName = "";
+    /** Creates new form TranslateFrame */
+    public TranslateFrame() {
+        initComponents();
+        translateTable.setModel(tableModel);
+        translateTable.getSelectionModel().addListSelectionListener(
+            new ListSelectionListener() {
+
+                public void valueChanged(ListSelectionEvent evt) {
+                    // System.out.println("value changed: " + evt.getValueIsAdjusting() + "; " + evt.getFirstIndex() + "; " + evt.getLastIndex());
+                    if (translateTable.getRowCount() > 0) {
+                        int num = translateTable.getSelectedRow();
+                        if (num < 0) {
+                            num = 0;
+                        }
+                        keyLabel.setText((String) translateTable.getValueAt(num, 0));
+                        englishArea.setText((String) translateTable.getValueAt(num, 1));
+                        localArea.setText((String) translateTable.getValueAt(num, 2));
+                    } else {
+                        englishArea.setText("");
+                        localArea.setText("");
+                        keyLabel.setText("");
+                    }
+                }
+
+            }
+            );
+
+        tableModel.addTableModelListener(new TableModelListener () {
+
+            public void tableChanged(TableModelEvent evt) {
+                if (tableModel.compareLocalToOriginal()) {
+                    modifiedLabel.setText("original");
+                    saveButton.setEnabled(false);
+                } else {
+                    modifiedLabel.setText("modified");
+                    saveButton.setEnabled(true);
+                }
+            }
+
+        });
+
+        translateTable.addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                //System.out.println("Porperty changed: "+evt.getPropertyName());
+                if (evt.getPropertyName().equals("tableCellEditor")) {
+                    TableCellEditor editor = (TableCellEditor) evt.getNewValue();
+
+                    if (editor != null) {
+                        Component c = translateTable.getEditorComponent();
+                        if (c instanceof JTextField) {
+                            ((JTextField) c).addKeyListener(new KeyAdapter() {
+
+                                @Override
+                                public void keyReleased(KeyEvent evt) {
+                                    super.keyReleased(evt);
+                                    JTextField editor = ((JTextField) evt.getSource());
+                                    localArea.setText(editor.getText());
+                                    localArea.setCaretPosition(editor.getCaretPosition());
+                                    //System.out.println(evt.getSource());
+                                }
+
+                            });
+                        } else {
+                            //System.out.println("Component not JTextField");
+                        }
+                    } else {
+                        //System.out.println("Editor null");
+                    }
+                }
+            }
+
+        });
+
+        translateTable.addKeyListener(new KeyAdapter() {
+
+            @Override
+            public void keyReleased(KeyEvent evt) {
+                //System.out.println("key released, editing? = " + translateTable.isEditing());
+                if (translateTable.isEditing()) {
+                    localArea.setText(((JTextField) translateTable.getEditorComponent()).getText());
+                }
+            }
+
+        });
+
+        translateTable.setDefaultRenderer(String.class, new TranslateTableRenderer());
+    }
+
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        jScrollPane1 = new javax.swing.JScrollPane();
+        translateTable = new javax.swing.JTable();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        englishArea = new javax.swing.JTextArea();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        localArea = new javax.swing.JTextArea();
+        modifiedLabel = new javax.swing.JLabel();
+        saveButton = new javax.swing.JButton();
+        keyLabel = new javax.swing.JLabel();
+
+        setTitle("Translate serendipity language file");
+        getContentPane().setLayout(new java.awt.GridBagLayout());
+
+        translateTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        translateTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        jScrollPane1.setViewportView(translateTable);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        getContentPane().add(jScrollPane1, gridBagConstraints);
+
+        englishArea.setColumns(20);
+        englishArea.setEditable(false);
+        englishArea.setLineWrap(true);
+        englishArea.setRows(5);
+        englishArea.setWrapStyleWord(true);
+        jScrollPane2.setViewportView(englishArea);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
+        getContentPane().add(jScrollPane2, gridBagConstraints);
+
+        jLabel1.setText("English");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
+        getContentPane().add(jLabel1, gridBagConstraints);
+
+        jLabel2.setText("Local Language");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
+        getContentPane().add(jLabel2, gridBagConstraints);
+
+        jLabel3.setText("Key name");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
+        getContentPane().add(jLabel3, gridBagConstraints);
+
+        localArea.setColumns(20);
+        localArea.setLineWrap(true);
+        localArea.setRows(5);
+        localArea.setWrapStyleWord(true);
+        localArea.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                localAreaKeyPressed(evt);
+            }
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                localAreaKeyReleased(evt);
+            }
+        });
+        jScrollPane3.setViewportView(localArea);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
+        getContentPane().add(jScrollPane3, gridBagConstraints);
+
+        modifiedLabel.setText("original");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
+        getContentPane().add(modifiedLabel, gridBagConstraints);
+
+        saveButton.setText("Save");
+        saveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 5);
+        getContentPane().add(saveButton, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
+        getContentPane().add(keyLabel, gridBagConstraints);
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
+        boolean checked = true;
+
+        for (int i = 0, rows = tableModel.getRowCount(); i < rows; i++) {
+            if (!PhpParser.hasClosedStrings(tableModel.getValueAt(i,2).toString())) {
+                translateTable.changeSelection(i, 2, false, false);
+                JOptionPane.showMessageDialog(null, "Selected message contains unterminated string constants. Please repair it and save again!", "Unterminated string constants", JOptionPane.ERROR_MESSAGE);
+                checked = false;
+                break;
+            }
+        }
+
+        if (checked) {
+            tableModel.saveLocal();
+            tableModel.updateOriginal();
+
+            firePropertyChange("file_saved", "", pluginName);
+        }
+    }//GEN-LAST:event_saveButtonActionPerformed
+
+    private void localAreaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_localAreaKeyReleased
+        int selRow = translateTable.getSelectedRow();
+        if (selRow != -1 && evt.getKeyCode() != KeyEvent.VK_ENTER) {
+            tableModel.setValueAt(localArea.getText(), translateTable.getSelectedRow(), 2);
+        }
+        if (selRow != -1 && evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            localArea.setText(localArea.getText().trim());
+        }
+    }//GEN-LAST:event_localAreaKeyReleased
+
+    private void localAreaKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_localAreaKeyPressed
+        int selRow = translateTable.getSelectedRow();
+        if (selRow != -1 && evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            if (selRow < translateTable.getRowCount()) {
+                if (PhpParser.hasClosedStrings(tableModel.getValueAt(translateTable.getSelectedRow(),2).toString())) {
+                    selRow++;
+                } else {
+                    System.out.println("before option pane");
+                    JOptionPane.showMessageDialog(null, "The message contains unterminated string constants. Please repair it!", "Unterminated string constants", JOptionPane.ERROR_MESSAGE);
+                    System.out.println("after option pane");
+                }
+            } else {
+                selRow = 0;
+            }
+            translateTable.changeSelection(selRow, 2, false, false);
+        }
+    }//GEN-LAST:event_localAreaKeyPressed
+
+    public void setPluginAndLanguage(String pluginName, String language) throws FileNotFoundException {
+        this.pluginName = pluginName;
+
+        if (messageDatabase != null) {
+            tableModel.setMessageDatabase(messageDatabase);
+        }
+        tableModel.setPluginAndLanguage(pluginName, language);
+        if (tableModel.getRowCount() > 0) {
+            translateTable.setRowSelectionInterval(0, 0);
+        }
+
+        setTitle(pluginName + ": Translate serendipity language file");
+    }
+
+    public void setTranslatorName(String name) {
+        tableModel.setTranslatorName(name);
+    }
+
+    public void setMessageDatabase(Hashtable<String, String> messageDatabase) {
+        this.messageDatabase = messageDatabase;
+    }
+
+
+    /**
+    * @param args the command line arguments
+    */
+    public static void main(String args[]) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new TranslateFrame().setVisible(true);
+            }
+        });
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextArea englishArea;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JLabel keyLabel;
+    private javax.swing.JTextArea localArea;
+    private javax.swing.JLabel modifiedLabel;
+    private javax.swing.JButton saveButton;
+    private javax.swing.JTable translateTable;
+    // End of variables declaration//GEN-END:variables
+
+}
