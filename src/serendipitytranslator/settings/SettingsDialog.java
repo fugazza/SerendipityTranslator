@@ -25,6 +25,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import serendipitytranslator.mainWindow.MainFrame;
 
 /**
@@ -57,6 +58,7 @@ public class SettingsDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jFileChooser1 = new javax.swing.JFileChooser();
         langComboBox = new javax.swing.JComboBox();
         jLabel1 = new javax.swing.JLabel();
         translatorTextField = new javax.swing.JTextField();
@@ -70,16 +72,28 @@ public class SettingsDialog extends javax.swing.JDialog {
         externPluginsComboBox = new javax.swing.JComboBox();
         jLabel5 = new javax.swing.JLabel();
         externPluginsTextField = new javax.swing.JTextField();
+        jLabel11 = new javax.swing.JLabel();
+        pluginsFolderTextField = new javax.swing.JTextField();
+        pluginsBrowseButton = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jLabel6 = new javax.swing.JLabel();
         coreTypeComboBox = new javax.swing.JComboBox();
         jLabel7 = new javax.swing.JLabel();
         coreUrlTextField = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        coreFolderTextField = new javax.swing.JTextField();
+        coreBrowseButton = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         externThemesComboBox = new javax.swing.JComboBox();
         jLabel10 = new javax.swing.JLabel();
         externThemesTextField = new javax.swing.JTextField();
+        jLabel12 = new javax.swing.JLabel();
+        themesFolderTextField = new javax.swing.JTextField();
+        themesBrowseButton = new javax.swing.JButton();
+
+        jFileChooser1.setDialogTitle("Choose directory");
+        jFileChooser1.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Settings for Serendipity Translator");
@@ -120,15 +134,31 @@ public class SettingsDialog extends javax.swing.JDialog {
 
         jLabel4.setText("Repository type:");
 
-        externPluginsComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "svn", "cvs", "git" }));
+        externPluginsComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "svn", "cvs", "git", "folder" }));
         externPluginsComboBox.setSelectedIndex(1);
 
-        jLabel5.setText("Folder with plugins:");
+        jLabel5.setText("URL with plugins:");
 
         externPluginsTextField.setText("http://php-blog.cvs.sourceforge.net/viewvc/php-blog/additional_plugins");
         externPluginsTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 externPluginsTextFieldActionPerformed(evt);
+            }
+        });
+
+        jLabel11.setText("Local folder:");
+
+        pluginsFolderTextField.setText("plugins/additional_plugins");
+        pluginsFolderTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pluginsFolderTextFieldActionPerformed(evt);
+            }
+        });
+
+        pluginsBrowseButton.setText("browse...");
+        pluginsBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pluginsBrowseButtonActionPerformed(evt);
             }
         });
 
@@ -140,11 +170,18 @@ public class SettingsDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel4)
-                    .addComponent(jLabel5))
+                    .addComponent(jLabel5)
+                    .addComponent(jLabel11))
                 .addGap(16, 16, 16)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(externPluginsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(externPluginsTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(pluginsFolderTextField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(pluginsBrowseButton))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(externPluginsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(externPluginsTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -156,19 +193,35 @@ public class SettingsDialog extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(externPluginsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel5)))
+                    .addComponent(jLabel5))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel11)
+                    .addComponent(pluginsFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(pluginsBrowseButton)))
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Serendipity core"));
 
         jLabel6.setText("Repository type:");
 
-        coreTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "svn", "cvs", "git" }));
+        coreTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "svn", "cvs", "git", "folder" }));
         coreTypeComboBox.setSelectedIndex(2);
 
-        jLabel7.setText("Serendipity core root:");
+        jLabel7.setText("URL - S9y core root:");
 
         coreUrlTextField.setText("https://github.com/s9y/Serendipity/tree/3d4e3e92c00f635853adfd196a6b67186e0523cc");
+
+        jLabel3.setText("Local folder:");
+
+        coreFolderTextField.setText("plugins/Serendipity");
+
+        coreBrowseButton.setText("browse...");
+        coreBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                coreBrowseButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -178,11 +231,18 @@ public class SettingsDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel6)
-                    .addComponent(jLabel7))
+                    .addComponent(jLabel7)
+                    .addComponent(jLabel3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(coreTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(coreUrlTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE))
+                    .addComponent(coreUrlTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(coreTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(coreFolderTextField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(coreBrowseButton)))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -194,22 +254,43 @@ public class SettingsDialog extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(coreUrlTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel7)))
+                    .addComponent(jLabel7))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(coreFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(coreBrowseButton)))
         );
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Additional themes"));
 
         jLabel8.setText("Repository type:");
 
-        externThemesComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "svn", "cvs", "git" }));
+        externThemesComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "svn", "cvs", "git", "folder" }));
         externThemesComboBox.setSelectedIndex(1);
 
-        jLabel10.setText("Folder with themes:");
+        jLabel10.setText("URL with themes:");
 
         externThemesTextField.setText("http://php-blog.cvs.sourceforge.net/viewvc/php-blog/additional_themes");
         externThemesTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 externThemesTextFieldActionPerformed(evt);
+            }
+        });
+
+        jLabel12.setText("Local folder:");
+
+        themesFolderTextField.setText("plugins/additional_themes");
+        themesFolderTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                themesFolderTextFieldActionPerformed(evt);
+            }
+        });
+
+        themesBrowseButton.setText("browse...");
+        themesBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                themesBrowseButtonActionPerformed(evt);
             }
         });
 
@@ -221,11 +302,18 @@ public class SettingsDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel8)
-                    .addComponent(jLabel10))
+                    .addComponent(jLabel10)
+                    .addComponent(jLabel12))
                 .addGap(15, 15, 15)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(externThemesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(externThemesTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                        .addComponent(themesFolderTextField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(themesBrowseButton))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(externThemesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(externThemesTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -237,7 +325,12 @@ public class SettingsDialog extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(externThemesTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel10)))
+                    .addComponent(jLabel10))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel12)
+                    .addComponent(themesFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(themesBrowseButton)))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -289,7 +382,7 @@ public class SettingsDialog extends javax.swing.JDialog {
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 25, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(closeSettingsButton)
                 .addContainerGap())
         );
@@ -321,6 +414,35 @@ public class SettingsDialog extends javax.swing.JDialog {
     private void externThemesTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_externThemesTextFieldActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_externThemesTextFieldActionPerformed
+
+    private void pluginsFolderTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pluginsFolderTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_pluginsFolderTextFieldActionPerformed
+
+    private void themesFolderTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_themesFolderTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_themesFolderTextFieldActionPerformed
+
+    private void coreBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_coreBrowseButtonActionPerformed
+        jFileChooser1.setSelectedFile(new File(coreFolderTextField.getText()));
+        if (jFileChooser1.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            coreFolderTextField.setText(jFileChooser1.getSelectedFile().getPath());
+        }
+    }//GEN-LAST:event_coreBrowseButtonActionPerformed
+
+    private void pluginsBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pluginsBrowseButtonActionPerformed
+        jFileChooser1.setSelectedFile(new File(pluginsFolderTextField.getText()));
+        if (jFileChooser1.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            pluginsFolderTextField.setText(jFileChooser1.getSelectedFile().getPath());
+        }
+    }//GEN-LAST:event_pluginsBrowseButtonActionPerformed
+
+    private void themesBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_themesBrowseButtonActionPerformed
+        jFileChooser1.setSelectedFile(new File(themesFolderTextField.getText()));
+        if (jFileChooser1.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            themesFolderTextField.setText(jFileChooser1.getSelectedFile().getPath());
+        }
+    }//GEN-LAST:event_themesBrowseButtonActionPerformed
 
     public String getLanguage() {
         return (String) langComboBox.getSelectedItem();
@@ -404,17 +526,26 @@ public class SettingsDialog extends javax.swing.JDialog {
                     if (count==2 && key.equals("coreUrl")) {
                         coreUrlTextField.setText(st.nextToken());
                     }
+                    if (count==2 && key.equals("coreFolder")) {
+                        coreFolderTextField.setText(st.nextToken());
+                    }
                     if (count==2 && key.equals("externPluginsType")) {
                         externPluginsComboBox.setSelectedItem(st.nextToken());
                     }
                     if (count==2 && key.equals("externPluginsUrl")) {
                         externPluginsTextField.setText(st.nextToken());
                     }
+                    if (count==2 && key.equals("externPluginsFolder")) {
+                        pluginsFolderTextField.setText(st.nextToken());
+                    }
                     if (count==2 && key.equals("externThemesType")) {
                         externThemesComboBox.setSelectedItem(st.nextToken());
                     }
                     if (count==2 && key.equals("externThemesUrl")) {
                         externThemesTextField.setText(st.nextToken());
+                    }
+                    if (count==2 && key.equals("externThemesFolder")) {
+                        themesFolderTextField.setText(st.nextToken());
                     }
                 }
                 br.close();
@@ -445,10 +576,13 @@ public class SettingsDialog extends javax.swing.JDialog {
             fw.write("downloadWindowHeight="+downloadDialogSize.height+"\r\n");
             fw.write("coreType="+getCoreType()+"\r\n");
             fw.write("coreUrl="+getCoreUrl()+"\r\n");
+            fw.write("coreFolder="+getCoreLocalFolder()+"\r\n");
             fw.write("externPluginsType="+getExternPluginsType()+"\r\n");
             fw.write("externPluginsUrl="+getExternPluginsUrl()+"\r\n");
+            fw.write("externPluginsFolder="+getExternPluginsLocalFolder()+"\r\n");
             fw.write("externThemesType="+getExternThemesType()+"\r\n");
             fw.write("externThemesUrl="+getExternThemesUrl()+"\r\n");
+            fw.write("externThemesFolder="+getExternThemesLocalFolder()+"\r\n");
             fw.close();
         } catch (IOException ex) {
             Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
@@ -499,19 +633,35 @@ public class SettingsDialog extends javax.swing.JDialog {
         return externThemesTextField.getText();
     }
 
+    public String getCoreLocalFolder() {
+        return coreFolderTextField.getText();
+    }
 
+    public String getExternPluginsLocalFolder() {
+        return pluginsFolderTextField.getText();
+    }
 
+    public String getExternThemesLocalFolder() {
+        return themesFolderTextField.getText();
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton closeSettingsButton;
+    private javax.swing.JButton coreBrowseButton;
+    private javax.swing.JTextField coreFolderTextField;
     private javax.swing.JComboBox coreTypeComboBox;
     private javax.swing.JTextField coreUrlTextField;
     private javax.swing.JComboBox externPluginsComboBox;
     private javax.swing.JTextField externPluginsTextField;
     private javax.swing.JComboBox externThemesComboBox;
     private javax.swing.JTextField externThemesTextField;
+    private javax.swing.JFileChooser jFileChooser1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -522,7 +672,11 @@ public class SettingsDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JComboBox langComboBox;
+    private javax.swing.JButton pluginsBrowseButton;
+    private javax.swing.JTextField pluginsFolderTextField;
     private javax.swing.JCheckBox problemPluginsCheckBox;
+    private javax.swing.JButton themesBrowseButton;
+    private javax.swing.JTextField themesFolderTextField;
     private javax.swing.JTextField translatorTextField;
     private javax.swing.JTextField updateURLTextField;
     // End of variables declaration//GEN-END:variables

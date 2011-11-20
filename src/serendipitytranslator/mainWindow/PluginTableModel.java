@@ -47,21 +47,21 @@ public class PluginTableModel extends AbstractTableModel {
         } else {
             switch (column) {
                 case 0:
-                    return pluginList.elementAt(row).getName();
+                    return pluginList.get(row).getName();
                 case 1:
-                    return pluginList.elementAt(row).getType();
+                    return pluginList.get(row).getType();
                 case 2:
-                    return pluginList.elementAt(row).isIntern();
+                    return pluginList.get(row).isIntern();
                 case 3:
-                    return pluginList.elementAt(row).getEnCount();
+                    return pluginList.get(row).getEnCount();
                 case 4:
-                    return pluginList.elementAt(row).getLocCount();
+                    return pluginList.get(row).getLocCount();
                 case 5:
-                    return pluginList.elementAt(row).getStatus();
+                    return pluginList.get(row).getStatus();
                 case 6:
-                    return pluginList.elementAt(row).getLocalStatus();
+                    return pluginList.get(row).getLocalStatus();
                 case 7:
-                    return pluginList.elementAt(row).getDocumentationStatus();
+                    return pluginList.get(row).getDocumentationStatus();
                 default:
                     return null;
             }

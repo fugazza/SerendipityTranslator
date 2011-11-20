@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package serendipitytranslator.webDownloaders;
+package serendipitytranslator.repositories;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,8 +11,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -26,10 +26,14 @@ import serendipitytranslator.mainWindow.SerendipityFileInfo;
  * http://svn.berlios.de/viewvc/serendipity/trunk/
  * @author Vláďa
  */
-public class SvnDownloader extends WebDownloader {
+public class SvnHTMLRepository extends AbstractHTMLRepository {
 
     @Override
-    public void loadListOfPlugins(PluginList plugins, String urlString, String language, boolean isIntern) {
+    public void loadListOfPlugins(PluginList plugins, String folderPath, String language, boolean isIntern) {
+        String urlString = getRemoteURL();
+        if (folderPath.length() > 0) {
+            urlString += "/" + folderPath;
+        }
         InputStream is = null;
         Plugin p;
 
@@ -66,8 +70,12 @@ public class SvnDownloader extends WebDownloader {
                             p.setType(PluginType.template);
                         }
                         p.setIntern(isIntern);
-                        p.setRepositoryType("svn");
-                        p.setRepositoryFolderUrl(urlString + "/" + pluginName);
+                        p.setRepository(this);
+                        String pluginFolderPath = pluginName;
+                        if (folderPath.length() > 0) {
+                            pluginFolderPath = folderPath + "/" + pluginName;
+                        }
+                        p.setFolderInRepository(pluginFolderPath);
                         plugins.add(p);
                     }
                 } else {
@@ -84,8 +92,9 @@ public class SvnDownloader extends WebDownloader {
     }
 
     @Override
-    public Vector<SerendipityFileInfo> loadFileList(String urlString) {
-        Vector<SerendipityFileInfo> filelist = new Vector<SerendipityFileInfo> ();
+    public void updateFileList(String folderPath) {
+        String urlString = getRemoteURL() + "/" + folderPath;
+        ArrayList<SerendipityFileInfo> filelist = new ArrayList<SerendipityFileInfo> ();
         String server;
         String folder;
 
@@ -146,8 +155,7 @@ public class SvnDownloader extends WebDownloader {
         } catch (IOException ex) {
             Logger.getLogger(PluginList.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        return filelist;
+        filelists.put(folderPath, filelist);
     }
 
     @Override
@@ -161,7 +169,7 @@ public class SvnDownloader extends WebDownloader {
             DateFormat df = DateFormat.getDateInstance();
             date = df.parse(age).getTime();
         } catch (ParseException ex) {
-            Logger.getLogger(GitDownloader.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(GitHTMLRepository.class.getName()).log(Level.SEVERE, null, ex);
         }
         return date;
     }

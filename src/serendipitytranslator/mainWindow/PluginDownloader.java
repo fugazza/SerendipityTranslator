@@ -42,7 +42,7 @@ public class PluginDownloader implements Runnable {
                     plugin.downloadFilelist();
                     plugin.downloadFiles();
                     propertyChange.firePropertyChange("pluginDowloaded", null, new Integer(++count));
-                    Thread.yield();
+                    //Thread.yield();
                 }
         } else {
             JOptionPane.showMessageDialog(null, "You are not connected to internet, plugins can not be downloaded!","Internet connection failed",JOptionPane.WARNING_MESSAGE);

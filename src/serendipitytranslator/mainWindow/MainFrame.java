@@ -12,21 +12,18 @@
 package serendipitytranslator.mainWindow;
 
 import ajgl.utils.ajglTools;
-import serendipitytranslator.translationWindow.TranslateFrame;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.text.MessageFormat;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,8 +32,9 @@ import javax.swing.JOptionPane;
 import javax.swing.RowFilter;
 import javax.swing.RowFilter.Entry;
 import javax.swing.table.TableRowSorter;
-import serendipitytranslator.translationWindow.LangFile;
 import serendipitytranslator.settings.SettingsDialog;
+import serendipitytranslator.translationWindow.LangFile;
+import serendipitytranslator.translationWindow.TranslateFrame;
 
 /**
  *
@@ -47,7 +45,7 @@ public class MainFrame extends javax.swing.JFrame {
     PluginList plugins;
     TranslateFrame translateFrame = new TranslateFrame();
     SettingsDialog settingsDialog = new SettingsDialog(this, true);
-    private Hashtable<String,String> messageDatabase = null;
+    private HashMap<String,String> messageDatabase = null;
     String language;
     private String version = "1.9";
     PluginDownloader pluginDownloader;
@@ -121,9 +119,9 @@ public class MainFrame extends javax.swing.JFrame {
         try {
             ajglTools.updater(new URL(settingsDialog.getUpdateURL() + "/version.txt"), version, new URL(settingsDialog.getUpdateURL() + "/SerendipityTranslator.jar"), new File("SerendipityTranslator.jar"), "SerendipityTranslator");
         } catch (MalformedURLException ex) {
-            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(MainFrame.class.getName()).log(Level.INFO, ex.getMessage());
         } catch (IOException ex) {
-            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(MainFrame.class.getName()).log(Level.INFO, ex.getMessage());
         }
     }
 
@@ -876,7 +874,7 @@ public class MainFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void updateLanguage() {
-        messageDatabase = new Hashtable<String,String>();
+        messageDatabase = new HashMap<String,String>();
         PluginList.setMessageDatabase(messageDatabase);
         plugins = PluginList.loadFromLocalDb(language);
         ((PluginTableModel) pluginTable.getModel()).setPluginList(plugins);
@@ -897,7 +895,24 @@ public class MainFrame extends javax.swing.JFrame {
             //JOptionPane.showMessageDialog(null, "Before comparison.");
             int i = 0;
             for (Plugin p: plugins) {
-                File enFile = LangFile.getFile(LangFile.LOCATION_PLUGINS,p.getName(),"en");
+                //auto-correct folders from previous versions
+                File oldFolder = new File(LangFile.getDownloadDirName(p.getName()));
+                File newFolder = new File(p.getFolder());
+                //System.out.println(oldFolder.getAbsolutePath() + " should be renamed to " + newFolder.getAbsolutePath());
+                if (!newFolder.exists() && oldFolder.exists()) {
+                    try {
+                        newFolder.mkdirs();
+                        Files.move(oldFolder.toPath(), newFolder.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                        //System.out.println("good");
+                    } catch (IOException ex) {
+                        //System.out.println("error");
+                        Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    //boolean result = oldFolder.renameTo(newFolder);
+                }
+                
+                // compare files, if they exist
+                File enFile = LangFile.getFile(p.getFolder(),p.getName(),"en");
                 if (enFile.exists()) {
                     p.compareFiles();
                 }
@@ -910,7 +925,7 @@ public class MainFrame extends javax.swing.JFrame {
 
     private void downloadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
         if (plugins.isEmpty()) {
-            plugins.loadFromRepository();
+            plugins.loadFromWeb();
         }
 
         pluginDownloader = new PluginDownloader(plugins);
@@ -956,16 +971,16 @@ public class MainFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_pluginTableMouseClicked
 
     private void openPluginInTranslateFrame() {
-        String selectedPlugin = plugins.get(
+        Plugin selectedPlugin = plugins.get(
                 pluginTable.convertRowIndexToModel(pluginTable.getSelectedRow())
-                ).getName();
+                );
         //System.out.println("Selected plugin: " + selectedPlugin);
 
         try {
             if (messageDatabase != null) {
                 translateFrame.setMessageDatabase(messageDatabase);
             }
-            translateFrame.setPluginAndLanguage(selectedPlugin, language);
+            translateFrame.setPluginAndLanguage(selectedPlugin.getFolder(), selectedPlugin.getName(), language);
             translateFrame.setTranslatorName(settingsDialog.getTranslator());
             translateFrame.setVisible(true);
         } catch (FileNotFoundException e) {
@@ -1124,12 +1139,12 @@ public class MainFrame extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(null, "You have newest version of SerendipityTranslator.","Update to new version",JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (UnknownHostException ex) {
-            Logger.getLogger(PluginList.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PluginList.class.getName()).log(Level.INFO, null, ex);
             JOptionPane.showMessageDialog(null, "You are not connected to internet, new version cannot be checked!","Update to new version",JOptionPane.WARNING_MESSAGE);
         } catch (MalformedURLException ex) {
-            Logger.getLogger(PluginList.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PluginList.class.getName()).log(Level.INFO, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(PluginList.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PluginList.class.getName()).log(Level.INFO, null, ex);
         }
     }//GEN-LAST:event_updateMenuItemActionPerformed
 

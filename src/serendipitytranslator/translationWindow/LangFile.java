@@ -5,30 +5,21 @@
 
 package serendipitytranslator.translationWindow;
 
-import serendipitytranslator.mainWindow.Plugin;
-import serendipitytranslator.mainWindow.PluginType;
-import serendipitytranslator.*;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
+import serendipitytranslator.mainWindow.Plugin;
+import serendipitytranslator.mainWindow.PluginType;
 
 /**
  *
@@ -42,8 +33,8 @@ public class LangFile {
     private File file = null;
     private String pluginName;
     private String language;
-    private Hashtable<String,String> definitions = new Hashtable<String,String>();
-    private Vector<LangFileElement> fileStructure = new Vector<LangFileElement>();
+    private HashMap<String,String> definitions = new HashMap<String,String>();
+    private ArrayList<LangFileElement> fileStructure = new ArrayList<LangFileElement>();
     private int version = 1;
     private int subversion = -1;
     private String authorName = "";
@@ -76,20 +67,23 @@ public class LangFile {
         return "plugins/" + pluginName;
     }
 
-    public static File getFile(int location, String pluginName, String language) {
+    public static String getFolderFromLocation(int location, String pluginName) {
+        switch (location) {
+            case LOCATIONS_TRANSLATED:
+                return getTranslatedDirName(pluginName);
+            case LOCATION_PLUGINS:
+            default:
+                return getDownloadDirName(pluginName);
+        }        
+    }
+    
+    public static File getFile(String folderPath, String pluginName, String language) {
         String fileName = "lang_"+language+".inc.php";
         if (pluginName.equals("system")) {
             fileName = "serendipity_lang_"+language+".inc.php";
         }
 
-        switch (location) {
-            case LOCATIONS_TRANSLATED:
-                return new File(getTranslatedDirName(pluginName)+"/"+fileName);
-            case LOCATION_PLUGINS:
-            default:
-                return new File(getDownloadDirName(pluginName)+"/"+fileName);
-        }
-
+        return new File(folderPath+"/"+fileName);
     }
 
     public LangFile(String pluginName, String language) {
@@ -97,14 +91,18 @@ public class LangFile {
     }
 
     public LangFile(int location, String pluginName, String language) {
+        this(getFolderFromLocation(location, pluginName),pluginName, language);
+    }
+
+    public LangFile(String pathToPlugin, String pluginName, String language) {
         this.pluginName = pluginName;
         this.language = language;
-
-        this.file = getFile(location,pluginName, language);
+        
+        this.file = getFile(pathToPlugin,pluginName, language);
         //System.out.println("plugin: " + pluginName);
         parseFile();
     }
-
+    
     private String getTranslatedDirName() {
         return getTranslatedDirName(pluginName);
     }
@@ -229,8 +227,8 @@ public class LangFile {
     }
 
     private void checkBetweens() {
-        Hashtable<String,Integer> betweens = new Hashtable<String,Integer>();
-        Hashtable<Integer,Integer> padCounts = new Hashtable<Integer,Integer>();
+        HashMap<String,Integer> betweens = new HashMap<String,Integer>();
+        HashMap<Integer,Integer> padCounts = new HashMap<Integer,Integer>();
 
         String between;
         int len;
@@ -297,8 +295,8 @@ public class LangFile {
         return file.exists();
     }
 
-    public Vector<String> getKeys() {
-        Vector<String> keys = new Vector<String>();
+    public ArrayList<String> getKeys() {
+        ArrayList<String> keys = new ArrayList<String>();
         for (LangFileElement lfe: fileStructure) {
             if (lfe.getType() == LangFileElement.KEY && !isSystemHandledKey(lfe.getLine())) {
                 keys.add(lfe.getLine());
@@ -331,8 +329,8 @@ public class LangFile {
     }
 
     public boolean hasIdenticKeys(LangFile lang2) {
-        Vector<String> keys1 = getKeys();
-        Vector<String> keys2 = lang2.getKeys();
+        ArrayList<String> keys1 = getKeys();
+        ArrayList<String> keys2 = lang2.getKeys();
 
         for(String key: keys1) {
             if (!keys2.contains(key)) {
@@ -355,7 +353,7 @@ public class LangFile {
             return false;
         }
 
-        Vector<String> keys = getKeys();
+        ArrayList<String> keys = getKeys();
 
         for(String key: keys) {
             if (!get(key).equals(lang2.get(key))) {
@@ -367,12 +365,12 @@ public class LangFile {
         return true;
     }
 
-    public Vector<LangFileElement> getFileStructure() {
+    public ArrayList<LangFileElement> getFileStructure() {
         return fileStructure;
     }
 
-    public void setKeysStructure(Vector<LangFileElement> enFileStructure) {
-        Vector<LangFileElement> elementsToRemove = new Vector<LangFileElement>();
+    public void setKeysStructure(ArrayList<LangFileElement> enFileStructure) {
+        ArrayList<LangFileElement> elementsToRemove = new ArrayList<LangFileElement>();
         for (LangFileElement lfe: fileStructure) {
             if (lfe.getType() != LangFileElement.HEADER && lfe.getType() != LangFileElement.STATEMENT) {
                 elementsToRemove.add(lfe);
@@ -547,8 +545,8 @@ public class LangFile {
         return (key.equals("LANG_CHARSET") || key.equals("SQL_CHARSET") || key.equals("DATE_LOCALES") || key.equals("WYSIWYG_LANG"));
     }
 
-    private static Hashtable<String,String> getCharsets() {
-        Hashtable<String,String> charsets = new Hashtable<String,String>();
+    private static HashMap<String,String> getCharsets() {
+        HashMap<String,String> charsets = new HashMap<String,String>();
         charsets.put("bg", "windows-1251");
         charsets.put("cn", "UTF-8");
         charsets.put("cs", "windows-1250");
@@ -581,8 +579,8 @@ public class LangFile {
         return charsets;
     }
 
-    private Hashtable<String,String> getSqlCharsets() {
-        Hashtable<String,String> sqlCharsets = new Hashtable<String,String>();
+    private HashMap<String,String> getSqlCharsets() {
+        HashMap<String,String> sqlCharsets = new HashMap<String,String>();
         sqlCharsets.put("bg", "cp1251");
         sqlCharsets.put("cn", "utf8");
         sqlCharsets.put("cs", "cp1250");
@@ -615,8 +613,8 @@ public class LangFile {
         return sqlCharsets;
     }
     
-    private Hashtable<String,String> getDateLocales() {
-        Hashtable<String,String> dateLocales = new Hashtable<String,String>();
+    private HashMap<String,String> getDateLocales() {
+        HashMap<String,String> dateLocales = new HashMap<String,String>();
         dateLocales.put("bg", "bulgarian, bg, bg_BG");
         dateLocales.put("cn", "zh_CN.UTF-8, cn, zh");
         dateLocales.put("cs", "cs_CZ.windows-1250, czech, cs");
@@ -649,8 +647,8 @@ public class LangFile {
         return dateLocales;
     }
 
-    private Hashtable<String,String> getWysiwygLang() {
-        Hashtable<String,String> wysiwygLang = new Hashtable<String,String>();
+    private HashMap<String,String> getWysiwygLang() {
+        HashMap<String,String> wysiwygLang = new HashMap<String,String>();
         wysiwygLang.put("bg", "en");
         wysiwygLang.put("cn", "en");
         wysiwygLang.put("cs", "cs-win");
@@ -683,8 +681,8 @@ public class LangFile {
         return wysiwygLang;
     }
 
-    private Hashtable<String,String> getUTFWysiwygLang() {
-        Hashtable<String,String> wysiwygLang = new Hashtable<String,String>();
+    private HashMap<String,String> getUTFWysiwygLang() {
+        HashMap<String,String> wysiwygLang = new HashMap<String,String>();
         wysiwygLang.put("bg", "en");
         wysiwygLang.put("cn", "en");
         wysiwygLang.put("cs", "cs-utf");
@@ -717,8 +715,8 @@ public class LangFile {
         return wysiwygLang;
     }
 
-    private Hashtable<String,String> getUTFLocales() {
-        Hashtable<String,String> dateLocales = new Hashtable<String,String>();
+    private HashMap<String,String> getUTFLocales() {
+        HashMap<String,String> dateLocales = new HashMap<String,String>();
         dateLocales.put("bg", "bulgarian, bg, bg_BG");
         dateLocales.put("cn", "zh_CN.UTF-8, cn, zh");
         dateLocales.put("cs", "cs_CZ.UTF-8, czech, cs");
@@ -787,8 +785,8 @@ public class LangFile {
         lf.file = this.file;
         lf.pluginName = this.pluginName;
         lf.language = this.language;
-        lf.definitions = (Hashtable<String,String>) this.definitions.clone();
-        lf.fileStructure = (Vector<LangFileElement>) this.fileStructure.clone();
+        lf.definitions = (HashMap<String,String>) this.definitions.clone();
+        lf.fileStructure = (ArrayList<LangFileElement>) this.fileStructure.clone();
         lf.version = this.version;
         lf.subversion = this.subversion;
         lf.authorName = this.authorName;

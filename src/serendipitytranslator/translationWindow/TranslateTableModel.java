@@ -7,9 +7,9 @@ package serendipitytranslator.translationWindow;
 
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.HashMap;
 import javax.swing.JOptionPane;
 import javax.swing.table.AbstractTableModel;
 
@@ -22,10 +22,10 @@ public class TranslateTableModel extends AbstractTableModel {
     private LangFile english = null;
     private LangFile originalLocal = null;
     private LangFile localLang = null;
-    private Vector<String> keys = null;
+    private ArrayList<String> keys = null;
     private String translatorName = "";
-    private Hashtable<String,String> messageDatabase = null;
-    private Hashtable<Integer,Boolean> initialFill = null;
+    private HashMap<String,String> messageDatabase = null;
+    private HashMap<Integer,Boolean> initialFill = null;
 
     public int getColumnCount() {
         return 3;
@@ -45,13 +45,13 @@ public class TranslateTableModel extends AbstractTableModel {
         } else {
             switch (column) {
                 case 0:
-                    return keys.elementAt(row);
+                    return keys.get(row);
                 case 1:
-                    return english.get(keys.elementAt(row));
+                    return english.get(keys.get(row));
                 case 2:
-                    String locval = localLang.get(keys.elementAt(row));
+                    String locval = localLang.get(keys.get(row));
                     if ((!initialFill.containsKey(row) || !initialFill.get(row)) && (locval.equals("") || locval.equals("''")) && (messageDatabase != null)) {
-                        String key = keys.elementAt(row);
+                        String key = keys.get(row);
                         //System.out.println("Message database contains key '" + key + "': " + ( messageDatabase.containsKey(key)) + "; keys count = " + messageDatabase.size());
                         if (messageDatabase.containsKey(key)) {
                             setValueAt(messageDatabase.get(key), row, column);
@@ -59,7 +59,7 @@ public class TranslateTableModel extends AbstractTableModel {
                         initialFill.put(row, Boolean.TRUE);
                     }
 
-                    return localLang.get(keys.elementAt(row));
+                    return localLang.get(keys.get(row));
                 default:
                     return null;
             }
@@ -67,7 +67,7 @@ public class TranslateTableModel extends AbstractTableModel {
     }
 
     public TranslateRowStatus getRowStatus(int row) {
-        String key = keys.elementAt(row);
+        String key = keys.get(row);
         String enValue = english.get(key);
         String locValue = localLang.get(key);
 
@@ -114,9 +114,9 @@ public class TranslateTableModel extends AbstractTableModel {
             System.err.println("Error, value not String");
         } else {
             if (column == 1) {
-                english.set(keys.elementAt(row), (String) value);
+                english.set(keys.get(row), (String) value);
             } else if (column == 2) {
-                localLang.set(keys.elementAt(row), (String) value);
+                localLang.set(keys.get(row), (String) value);
                 fireTableCellUpdated(row, column);
             } else {
                 System.err.println("Not possible to modify the column number " + column);
@@ -126,23 +126,23 @@ public class TranslateTableModel extends AbstractTableModel {
 
 
 
-    public void setPluginAndLanguage(String pluginName, String language) throws FileNotFoundException {
-        english = new LangFile(pluginName, "en");
+    public void setPluginAndLanguage(String folderPath, String pluginName, String language) throws FileNotFoundException {
+        english = new LangFile(folderPath, pluginName, "en");
         if (!english.exists()) {
             throw new FileNotFoundException("English file not found, nothing to translate.");
         }
 
-        keys = new Vector<String>();
+        keys = new ArrayList<String>();
 
         boolean newKeysAdded = false;
         SimpleDateFormat shortDateFormat = new SimpleDateFormat("yyyy/MM/dd");
 
-        LangFile downloadedFile = new LangFile(LangFile.LOCATION_PLUGINS,pluginName, language);
+        LangFile downloadedFile = new LangFile(folderPath,pluginName, language);
         LangFile translatedFile = new LangFile(LangFile.LOCATIONS_TRANSLATED,pluginName, language);
 
         if (!downloadedFile.exists()) {
             //System.out.println("downloaded file does not exist.");
-            localLang = new LangFile(pluginName, language);
+            localLang = new LangFile(folderPath, pluginName, language);
             localLang.setKeysStructure(english.getFileStructure());
             if (translatedFile.exists()) {
                 for (String key: translatedFile.getKeys()) {
@@ -174,7 +174,7 @@ public class TranslateTableModel extends AbstractTableModel {
                             localLang.set(key, (keyValue == null) ? "" : keyValue );
                         }
 
-                        Vector<String> localKeys = localLang.getKeys();
+                        ArrayList<String> localKeys = localLang.getKeys();
                         for (String key: translatedFile.getKeys()) {
                             if (!localKeys.contains(key)) {
                                 if (!newKeysAdded) {
@@ -197,8 +197,8 @@ public class TranslateTableModel extends AbstractTableModel {
             }
 
 
-            Vector<String> enKeys = english.getKeys();
-            Vector<String> locKeys = localLang.getKeys();
+            ArrayList<String> enKeys = english.getKeys();
+            ArrayList<String> locKeys = localLang.getKeys();
 
             for(String key: enKeys) {
                 if (!locKeys.contains(key)) {
@@ -214,8 +214,8 @@ public class TranslateTableModel extends AbstractTableModel {
             }
         }
 
-        Vector<String> enKeys = english.getKeys();
-        Vector<String> locKeys = localLang.getKeys();
+        ArrayList<String> enKeys = english.getKeys();
+        ArrayList<String> locKeys = localLang.getKeys();
 
         for(String key: locKeys) {
             if (!enKeys.contains(key)) {
@@ -226,7 +226,7 @@ public class TranslateTableModel extends AbstractTableModel {
         keys = localLang.getKeys();
         originalLocal = localLang.clone();
 
-        initialFill = new Hashtable<Integer,Boolean> ();
+        initialFill = new HashMap<Integer,Boolean> ();
         //System.out.println("english keys count = " + english.getKeysCount() + "; local keys count = " + localLang.getKeysCount() + "; original keys count = " + originalLocal.getKeysCount());
 
         fireTableDataChanged();
@@ -254,7 +254,7 @@ public class TranslateTableModel extends AbstractTableModel {
         }
     }
 
-    public void setMessageDatabase(Hashtable<String, String> messageDatabase) {
+    public void setMessageDatabase(HashMap<String, String> messageDatabase) {
         this.messageDatabase = messageDatabase;
     }
 

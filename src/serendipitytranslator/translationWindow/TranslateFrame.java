@@ -17,7 +17,7 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.FileNotFoundException;
-import java.util.Hashtable;
+import java.util.HashMap;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
@@ -33,7 +33,7 @@ import javax.swing.table.TableCellEditor;
 public class TranslateFrame extends javax.swing.JFrame {
 
     TranslateTableModel tableModel = new TranslateTableModel();
-    private Hashtable<String,String> messageDatabase = null;
+    private HashMap<String,String> messageDatabase = null;
     String pluginName = "";
     /** Creates new form TranslateFrame */
     public TranslateFrame() {
@@ -314,13 +314,13 @@ public class TranslateFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_localAreaKeyPressed
 
-    public void setPluginAndLanguage(String pluginName, String language) throws FileNotFoundException {
+    public void setPluginAndLanguage(String folderPath, String pluginName, String language) throws FileNotFoundException {
         this.pluginName = pluginName;
 
         if (messageDatabase != null) {
             tableModel.setMessageDatabase(messageDatabase);
         }
-        tableModel.setPluginAndLanguage(pluginName, language);
+        tableModel.setPluginAndLanguage(folderPath, pluginName, language);
         if (tableModel.getRowCount() > 0) {
             translateTable.setRowSelectionInterval(0, 0);
         }
@@ -332,7 +332,7 @@ public class TranslateFrame extends javax.swing.JFrame {
         tableModel.setTranslatorName(name);
     }
 
-    public void setMessageDatabase(Hashtable<String, String> messageDatabase) {
+    public void setMessageDatabase(HashMap<String, String> messageDatabase) {
         this.messageDatabase = messageDatabase;
     }
 

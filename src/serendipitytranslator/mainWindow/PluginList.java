@@ -10,48 +10,36 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Hashtable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import serendipitytranslator.repositories.*;
 import serendipitytranslator.settings.SettingsDialog;
-import serendipitytranslator.webDownloaders.CvsDownloader;
-import serendipitytranslator.webDownloaders.GitDownloader;
-import serendipitytranslator.webDownloaders.SvnDownloader;
-import serendipitytranslator.webDownloaders.WebDownloader;
 
 /**
  *
  * @author Vláďa
  */
-public class PluginList extends Vector<Plugin> {
+public class PluginList extends ArrayList<Plugin> {
 
     private static SettingsDialog settings = null;
 
     private String language = "cs";
     private PropertyChangeSupport propertyChange;
-    private static Hashtable<String,String> messageDatabase = null;
+    private static HashMap<String,String> messageDatabase = null;
 
     public PluginList(String language) {
         super();
@@ -63,207 +51,98 @@ public class PluginList extends Vector<Plugin> {
         propertyChange.addPropertyChangeListener(listener);
     }
 
-    public void loadFromFile(File file) {
-        if (file.exists()) {
-            try {
-                // System.out.println("File " + file.getName());
-                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-                DocumentBuilder builder = dbFactory.newDocumentBuilder();
-                Document doc = builder.parse(file);
-                NodeList nodes = doc.getChildNodes();
-                NodeList packages = nodes.item(1).getChildNodes();
-                //System.out.println("There are " + packages.getLength() + " packages.");
-                Plugin plugin = null;
-                for (int i = 0; i < packages.getLength(); i++) {
-                    String pluginName = "";
-                    PluginStatus pluginStatus = PluginStatus.problem;
-                    NodeList pack = packages.item(i).getChildNodes();
-                    for (int j = 0; j < pack.getLength(); j++) {
-                        Node data = pack.item(j);
-                        if (data.getNodeName().equals("name")) {
-                            //System.out.println(data.getNodeName() + " - " + data.getTextContent());
-                            pluginName = data.getTextContent();
-                        }
-                        if (data.getNodeName().equals("release")) {
-                            NodeList release = data.getChildNodes();
-                            for (int k = 0; k < release.getLength(); k++) {
-                                Node releaseItem = release.item(k);
-                                if (releaseItem.getNodeName().equals("filelist")) {
-                                    NodeList relFiles = releaseItem.getChildNodes();
-                                    for (int m =0; m < relFiles.getLength(); m++) {
-                                        Node dirNode = relFiles.item(m);
-                                        if (dirNode.getNodeName().equals("dir")) {
-                                            pluginName = dirNode.getAttributes().getNamedItem("name").getTextContent();
-                                            //System.out.println("plugin name changed to " + pluginName);
-                                            NodeList baseDir = dirNode.getChildNodes();
-                                            //System.out.println(releaseItem.getFirstChild().getNodeName());
-                                            for (int l = 0; l < baseDir.getLength(); l++) {
-                                                Node fileNode = baseDir.item(l);
-                                                if (fileNode.getNodeName().equals("file") && fileNode.getTextContent().equals("lang_" + language + ".inc.php")) {
-                                                    pluginStatus = PluginStatus.partial;
-                                                    break;
-                                                }
-                                                if (fileNode.getNodeName().equals("file") && fileNode.getTextContent().equals("lang_en.inc.php")) {
-                                                    pluginStatus = PluginStatus.no;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if (packages.item(i).getNodeType() == Node.ELEMENT_NODE) {
-                        //System.out.println(pluginName + " plugin added");
-                        plugin = new Plugin(pluginName,language);
-                        plugin.setStatus(pluginStatus);
-                        if (file.getName().equals("package_sidebar.xml")) {
-                            plugin.setType(PluginType.sidebar);
-                        } else if (file.getName().equals("package_template.xml")) {
-                            plugin.setType(PluginType.template);
-                        }
-                        add(plugin);
-                    }
-                }
-            } catch (SAXException ex) {
-                Logger.getLogger(PluginList.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IOException ex) {
-                Logger.getLogger(PluginList.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (ParserConfigurationException ex) {
-                Logger.getLogger(PluginList.class.getName()).log(Level.SEVERE, null, ex);
-            }
+    private static SimpleFileRepository selectRepository(String repoType) {
+        SimpleFileRepository workingRepository;
+        if (repoType.equals("svn")) {
+            workingRepository = new SvnHTMLRepository();
+        } else if (repoType.equals("git")) {
+            workingRepository = new GitHTMLRepository();
+        } else if (repoType.equals("folder")) {
+            workingRepository = new SimpleFileRepository();
+        } else {
+            workingRepository = new CvsHTMLRepository();
         }
-
+        return workingRepository;
     }
-
-    private void download(File file){
-        try {
-            URL url = new URL("http://netmirror.org/mirror/serendipity/"+file.getName());
-
-
-            InputStream is = url.openStream();
-            byte buffer[] = new byte[1024];
-            FileOutputStream fos = new FileOutputStream(file);
-            int bytesRead = 0;
-            while ((bytesRead = is.read(buffer)) != -1) {
-                fos.write(buffer, 0, bytesRead);
-            }
-            is.close();
-            fos.close();
-            
-//            BufferedWriter fw = new BufferedWriter(new FileWriter(file));
-//            BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
-//            String inputLine;
-//            while ((inputLine = in.readLine()) != null) {
-//                fw.write(inputLine);
-//                fw.newLine();
-//            }
-//            in.close();
-//            fw.close();
-
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(PluginList.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(PluginList.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-    }
-
-    public void loadFromRepository() {
-        clear();
-        File file1 = new File("package_event.xml");
-        File file2 = new File("package_sidebar.xml");
-        File file3 = new File("package_template.xml");
-        download(file1);
-        download(file2);
-        download(file3);
-
-        add(new Plugin("system",language));
-        addInterns();
-        loadFromFile(file1);
-        loadFromFile(file2);
-        loadFromFile(file3);
-
-        file1.delete();
-        file2.delete();
-        file3.delete();
-
-        System.out.println("Plugin list updated. Now there are " + size() + " plugins/templates in the list.");
-        propertyChange.firePropertyChange("list_downloaded", null, this);
-    }
-
+    
     public void loadFromWeb() {
-        if (ajglTools.checkInternetConnection()) {
-            WebDownloader webDownloader;
-            String serverType;
+        SimpleFileRepository coreRepository = selectRepository(settings.getCoreType());
+        coreRepository.setRepositoryFolderName(settings.getCoreLocalFolder());
+        coreRepository.setHasInternalPlugins(true);
+
+        SimpleFileRepository pluginsRepository = selectRepository(settings.getExternPluginsType());
+        pluginsRepository.setRepositoryFolderName(settings.getExternPluginsLocalFolder());
+        pluginsRepository.setHasInternalPlugins(false);
+
+        SimpleFileRepository themesRepository = selectRepository(settings.getExternThemesType());
+        themesRepository.setRepositoryFolderName(settings.getExternThemesLocalFolder());
+        themesRepository.setHasInternalPlugins(false);
+        
+        boolean downloadsRequired = coreRepository.isUpdatable() || pluginsRepository.isUpdatable() || themesRepository.isUpdatable();
+        boolean internetAvailable = ajglTools.checkInternetConnection();
+        if (!internetAvailable) {
+            JOptionPane.showMessageDialog(null, "You are not connected to internet, plugin list can not be downloaded!","Internet connection failed",JOptionPane.WARNING_MESSAGE);
+        }
+        
+        if (!downloadsRequired || internetAvailable) {
             //System.out.println("Connection works, now the download begins.");
             clear();
-            
-            Plugin systemLangFile = new Plugin("system",language);
-            systemLangFile.setRepositoryType(settings.getCoreType());
-            systemLangFile.setRepositoryFolderUrl(settings.getCoreUrl()+ "/lang");
-            add(systemLangFile);
-            //System.out.println("Internals will be loaded.");
-            if (ajglTools.checkInternetConnection(settings.getCoreUrl())) {
-                serverType = settings.getCoreType();
-                if (serverType.equals("svn")) {
-                    webDownloader = new SvnDownloader();
-                } else if (serverType.equals("git")) {
-                    webDownloader = new GitDownloader();
-                } else {
-                    webDownloader = new CvsDownloader();
-                }
 
-                webDownloader.loadListOfPlugins(this, settings.getCoreUrl() + "/plugins", language, true);
-                webDownloader.loadListOfPlugins(this, settings.getCoreUrl() + "/templates", language, true);
+            //System.out.println("System file will be added.");
+            Plugin systemLangFile = new Plugin("system",language);
+            systemLangFile.setRepository(coreRepository);
+            systemLangFile.setFolderInRepository("lang");
+            add(systemLangFile);
+
+            //System.out.println("Internals will be loaded.");
+            boolean coreRepAvailable = true;
+            if (coreRepository instanceof AbstractHTMLRepository) {
+                if (ajglTools.checkInternetConnection(settings.getCoreUrl())) {
+                    ((AbstractHTMLRepository) coreRepository).setRemoteURL(settings.getCoreUrl());                    
+                } else {
+                    coreRepAvailable = false;
+                }
+            }
+            if (coreRepAvailable) {
+                coreRepository.loadListOfPlugins(this, "plugins", language, true);
+                coreRepository.loadListOfPlugins(this, "templates", language, true);
             } else {
                 JOptionPane.showMessageDialog(null, "Core server ("+settings.getCoreUrl()+") is not accessible."+'\r'+'\n'+"Internal plugins cannot be updated.", "Core server error", JOptionPane.WARNING_MESSAGE);
             }
-            
-            //System.out.println("External plugins be loaded.");
-            if (ajglTools.checkInternetConnection(settings.getExternPluginsUrl())) {
-                serverType = settings.getExternPluginsType();
-                if (serverType.equals("svn")) {
-                    webDownloader = new SvnDownloader();
-                } else if (serverType.equals("git")) {
-                    webDownloader = new GitDownloader();
-                } else {
-                    webDownloader = new CvsDownloader();
-                }
 
-                webDownloader.loadListOfPlugins(this, settings.getExternPluginsUrl(), language, false);
+            //System.out.println("External plugins be loaded.");
+            boolean pluginRepAvailable = true;
+            if (pluginsRepository instanceof AbstractHTMLRepository) {
+                if (ajglTools.checkInternetConnection(settings.getExternPluginsUrl())) {
+                    ((AbstractHTMLRepository) pluginsRepository).setRemoteURL(settings.getExternPluginsUrl());                    
+                } else {
+                    pluginRepAvailable = false;
+                }
+            }
+            if (pluginRepAvailable) {
+                pluginsRepository.loadListOfPlugins(this, "", language, false);
             } else {
                 JOptionPane.showMessageDialog(null, "Server with external plugins ("+settings.getExternPluginsUrl()+") is not accessible."+'\r'+'\n'+"External plugins cannot be updated.", "Plugins server error", JOptionPane.WARNING_MESSAGE);
             }
-            //System.out.println("External themes will be loaded.");
-            if (ajglTools.checkInternetConnection(settings.getExternThemesUrl())) {
-                serverType = settings.getExternThemesType();
-                if (serverType.equals("svn")) {
-                    webDownloader = new SvnDownloader();
-                } else if (serverType.equals("git")) {
-                    webDownloader = new GitDownloader();
-                } else {
-                    webDownloader = new CvsDownloader();
-                }
 
-                webDownloader.loadListOfPlugins(this, settings.getExternThemesUrl(), language, false);
+            //System.out.println("External themes will be loaded.");
+            boolean themesRepAvailable = true;
+            if (themesRepository instanceof AbstractHTMLRepository) {
+                if (ajglTools.checkInternetConnection(settings.getExternThemesUrl())) {
+                    ((AbstractHTMLRepository) themesRepository).setRemoteURL(settings.getExternThemesUrl());                    
+                } else {
+                    themesRepAvailable = false;
+                }
+            }
+            if (themesRepAvailable) {
+                themesRepository.loadListOfPlugins(this, "", language, false);
             } else {
-                JOptionPane.showMessageDialog(null, "CVS server (php-blog.cvs.sourceforge.net) is not accessible."+'\r'+'\n'+"External plugins cannot be updated.", "CVS server error", JOptionPane.WARNING_MESSAGE);
                 JOptionPane.showMessageDialog(null, "Server with external themes ("+settings.getExternThemesUrl()+") is not accessible."+'\r'+'\n'+"External themes cannot be updated.", "Themes server error", JOptionPane.WARNING_MESSAGE);
             }
+
             System.out.println("Plugin list updated. Now there are " + size() + " plugins/templates in the list.");
             propertyChange.firePropertyChange("list_downloaded", null, this);
             //JOptionPane.showMessageDialog(null, "Plugin list downloaded","Plugin list downloaded",JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(null, "You are not connected to internet, plugin list can not be downloaded!","Internet connection failed",JOptionPane.WARNING_MESSAGE);
-        }
-
-    }
-
-    public void addInterns() {
-        for (String pluginName: Plugin.getInterns()) {
-            add(new Plugin(pluginName,language));
         }
     }
 
@@ -391,6 +270,27 @@ public class PluginList extends Vector<Plugin> {
     }
 
     public static PluginList loadFromLocalDb(String language) {
+        SimpleFileRepository coreRepository = selectRepository(settings.getCoreType());
+        coreRepository.setRepositoryFolderName(settings.getCoreLocalFolder());
+        coreRepository.setHasInternalPlugins(true);
+        if (coreRepository instanceof AbstractHTMLRepository) {
+            ((AbstractHTMLRepository) coreRepository).setRemoteURL(settings.getCoreUrl());
+        }
+        
+        SimpleFileRepository pluginsRepository = selectRepository(settings.getExternPluginsType());
+        pluginsRepository.setRepositoryFolderName(settings.getExternPluginsLocalFolder());
+        pluginsRepository.setHasInternalPlugins(false);
+        if (pluginsRepository instanceof AbstractHTMLRepository) {
+            ((AbstractHTMLRepository) pluginsRepository).setRemoteURL(settings.getExternPluginsUrl());
+        }
+
+        SimpleFileRepository themesRepository = selectRepository(settings.getExternThemesType());
+        themesRepository.setRepositoryFolderName(settings.getExternThemesLocalFolder());
+        themesRepository.setHasInternalPlugins(false);
+        if (themesRepository instanceof AbstractHTMLRepository) {
+            ((AbstractHTMLRepository) themesRepository).setRemoteURL(settings.getExternThemesUrl());
+        }
+        
         PluginList plugins = new PluginList(language);
         try {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -455,8 +355,8 @@ public class PluginList extends Vector<Plugin> {
                     plugin.setCounts(enCount, locCount);
 
                     if (type.equals(PluginType.system)) {
-                        plugin.setRepositoryType(settings.getCoreType());
-                        plugin.setRepositoryFolderUrl(settings.getCoreUrl()+ "/lang");
+                        plugin.setRepository(coreRepository);
+                        plugin.setFolderInRepository("lang");
                     } else if (intern) {
                         String folder = "";
                         if (type.equals(PluginType.template)) {
@@ -464,14 +364,14 @@ public class PluginList extends Vector<Plugin> {
                         } else {
                             folder = "plugins";
                         }
-                        plugin.setRepositoryType(settings.getCoreType());
-                        plugin.setRepositoryFolderUrl(settings.getCoreUrl()+ "/" + folder + "/" + name);
+                        plugin.setRepository(coreRepository);
+                        plugin.setFolderInRepository(folder + "/" + name);
                     } else if (type.equals(PluginType.template)) {
-                        plugin.setRepositoryType(settings.getExternThemesType());
-                        plugin.setRepositoryFolderUrl(settings.getExternThemesUrl()+ "/" + name);
+                        plugin.setRepository(themesRepository);
+                        plugin.setFolderInRepository(name);
                     } else {
-                        plugin.setRepositoryType(settings.getExternPluginsType());
-                        plugin.setRepositoryFolderUrl(settings.getExternPluginsUrl()+ "/" + name);
+                        plugin.setRepository(pluginsRepository);
+                        plugin.setFolderInRepository(name);
                     }
 
                     //System.out.println("plugin " + name + ": intern = " + plugin.isIntern());
@@ -493,7 +393,7 @@ public class PluginList extends Vector<Plugin> {
         return language;
     }
 
-    public static void setMessageDatabase(Hashtable<String, String> messageDatabase) {
+    public static void setMessageDatabase(HashMap<String, String> messageDatabase) {
         PluginList.messageDatabase = messageDatabase;
     }
 

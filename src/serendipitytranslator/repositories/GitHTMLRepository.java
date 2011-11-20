@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package serendipitytranslator.webDownloaders;
+package serendipitytranslator.repositories;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,8 +12,8 @@ import java.net.SocketException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -27,17 +27,21 @@ import serendipitytranslator.mainWindow.SerendipityFileInfo;
  * https://github.com/s9y/Serendipity
  * @author Vláďa
  */
-public class GitDownloader extends WebDownloader {
+public class GitHTMLRepository extends AbstractHTMLRepository {
 
     @Override
-    public void loadListOfPlugins(PluginList plugins, String urlString, String language, boolean isIntern) {
+    public void loadListOfPlugins(PluginList plugins, String folderPath, String language, boolean isIntern) {
+        String urlString = getRemoteURL();
+        if (folderPath.length() > 0) {
+            urlString += "/" + folderPath;
+        }
         InputStream is = null;
         try {
             String server;
             String projectRoot;
             String dirname;
 
-            //System.out.println(urlString);
+            System.out.println(urlString);
             Pattern pattern = Pattern.compile("(https?://[^/]*)/(.*)/([^/]*)");
             Matcher m = pattern.matcher(urlString);
             m.matches();
@@ -73,8 +77,12 @@ public class GitDownloader extends WebDownloader {
                                 p.setType(PluginType.template);
                             }
                             p.setIntern(isIntern);
-                            p.setRepositoryType("git");
-                            p.setRepositoryFolderUrl(urlString + "/" + pluginName);
+                            p.setRepository(this);
+                            String pluginFolderPath = pluginName;
+                            if (folderPath.length() > 0) {
+                                pluginFolderPath = folderPath + "/" + pluginName;
+                            }
+                            p.setFolderInRepository(pluginFolderPath);
                             plugins.add(p);
                         }
                     }
@@ -98,8 +106,9 @@ public class GitDownloader extends WebDownloader {
     }
 
     @Override
-    public Vector<SerendipityFileInfo> loadFileList(String urlString) {
-        Vector<SerendipityFileInfo> filelist = new Vector<SerendipityFileInfo> ();
+    public void updateFileList(String folderPath) {
+        String urlString = getRemoteURL() + "/" + folderPath;
+        ArrayList<SerendipityFileInfo> filelist = new ArrayList<SerendipityFileInfo> ();
         String server;
         String origFolder;
         String folder;
@@ -165,7 +174,7 @@ public class GitDownloader extends WebDownloader {
             Logger.getLogger(PluginList.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        return filelist;
+        filelists.put(folderPath,filelist);
     }
 
     @Override
@@ -180,7 +189,7 @@ public class GitDownloader extends WebDownloader {
                 SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 date = df.parse(age).getTime();
             } catch (ParseException ex) {
-                Logger.getLogger(GitDownloader.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(GitHTMLRepository.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         return date;
