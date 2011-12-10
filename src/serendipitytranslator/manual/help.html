@@ -1,21 +1,27 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
+<?xml version="1.0" encoding="windows-1250"?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" >
   <head>
-  <meta http-equiv="content-type" content="text/html; charset=windows-1250">
-  <meta name="generator" content="PSPad editor, www.pspad.com">
-  <title></title>
+  <meta http-equiv="content-type" content="text/html; charset=windows-1250" />
+  <title>Serendipity Translator - Help</title>
   </head>
   <body>
 <h2>Users' guide</h2>
 <h3>Settings (shortcut key "S")</h3>
-<img width="404" height="180" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="settings_dialog.png" alt="" />
+<img width="498" height="533" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="settings_dialog.png" alt="" />
 
 <p>
 First it is recomended to set up the programm. Click on "Settings" (shortcut key "s"). Set the <b>language</b> you want to translate to. Set also the <b>name and e-mail of translator</b>. It will be used only to be included in translated files, to let know further translators who did the translations before.
+</p>
 <p>
 <b>do not show plugins without translate file</b> - some plugins, especially templates, have no language files, no messages to translate. In the list of plugins, they are only for your information. Checking this option will hide them in the list.
+</p>
 <p>
 <b>WWW address with application</b> - Here you can specify our own server (folder) that holds newest version of application.
+</p>
+<p>
+    <b>Serendipity core</b>, <b>Additional plugins</b>, <b>Additional themes</b> - Here you can set the access method (<b>Repository type</b>) and addres of remote repository (<b>URL</b>), from which the lang files are downloaded, and where to store them on your computer (<b>Local folder</b>). Default settings work well, in first it is not necessary to change it. If you observe difficulties, eg. downloading seem to be slow, you can try to change it. But you shoud read <a href="#protocols">paragraph about protocols</a> first.
+</p>
 
 <h3>Main window</h3>
 <h4>"Update plugin list" button (shortcut key "U")</h4>
@@ -23,8 +29,10 @@ After clicking, the application will connect to the internet repository (the sam
 
 <h4>"Download files" button (shortcut key "D")</h4>
 <p>The program will download language files - english files and also the files in selected local language (see Settings) and will compare them by content. Downloading can be lengthy, therefore there is progress bar that informs you about the downloading progress.
+</p>
 <p>
 <img width="540" height="90" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="download_progress.png" alt="" />
+</p>
 <p>In version 1.6 was added feature, that downloads only changed files. Downloading is now a bit faster. Also you can now stop the downloading by bancel button. Since mentioned version, documentation files (documentation_xx.html, readmes, ChangeLogs) are also downloaded to enable you to translate also this documentation. See section <a href="#documentation">Documentation translations</a>.
 </p>
 
@@ -58,12 +66,13 @@ If there comes up a situation when files are not compared (e.g. after you transl
 
 <p>
 "Status" column compares downloaded file (from "plugins" directory) with english one.
+</p>
 <p>
 "Translate status" column compares translated file (from "plugins_translated" directory) with english one.
-<p>
+</p>
 
-   <ol>
-   These situations are possible.
+These situations are possible.
+<ol>
    <li>If one plugin has "Status" partial or no, and "translate status" is ok, then we have already translated the file, but it wasn't uploaded to the internet repository. It is time to publish it on serendipity forum.</li>
    <li>"Status" is ok, "Translate status" is no - it means that the plugin is well translated, but we didn't do the translation. There is no need to translate it any more.</li>
    <li>"Status" is partial or no and "Translate status" is partial. It means that we have alredy translated the file, but that we didn't finish the job. It needs to finish the translation and to publish the result on serendipity forum.</li>
@@ -86,13 +95,15 @@ If there comes up a situation when files are not compared (e.g. after you transl
 <h3>Translation window</h3>
 <p>
 In the upper part of translation window, there are three fields - the name of edited message, the message in english and the message in local language.
+</p>
 <p>
 Local language messages can be edited in the table with messages and also in the field with local message.
+</p>
 <p>
 In the status bar, there is "original" x "modified" message. It signalises if the file has been changed or not. If the status is "modified", it is possible to save the file. The file will be stored in "plugins_translated" directory.
-<p>
-<ul>
+</p>
 The translation table rows can be of 4 colors:
+<ul>
 <li>red - the message is not translated in local language</li>
 <li>green - the message exists in local language, but it is the same as in the english language file. It is highly probable, that the translator who translated the file before you, did the copy of messages, but did not translate all of them.</li>
 <li>yellow - the message exists in local language, but not in english. It is possible that it was removed in newer version of plugin. If we want to remove it from the translated file, we will delete it. Blank messages are not written in the language file during saving.</li>
@@ -116,29 +127,45 @@ From version 1.9 the application creates automatically the UTF-8 version of docu
 The documentation files in utf-8 encoding are created after clicking on <a href="#export_to_zip">"export translated files to zip file"</a> in "translations" menu.
 </p>
 
+<a name="protocols"></a>
+<h3>Protocols - access to internet repositories</h3>
+<p>
+    ATTENTION! URL address of internet repository is bound with type of repository - eg. github.com has its git html web page, sourceforge.net offers its web frontend for cvs. Serendipity Translator does not check this dependencies, so you can make it not working, when you set it wrong, eg. when you write github.com in URL field and select cvs repository.
+</p>
+<p>
+    ATTENTION! Default settings for downloading Serendipity Core files is not perfect. In November 2011 the core was moved from berlios.de (which was stopped) to github.com. Unfortunately the html frontend of github is difficult to parse, so now the files are not downloaded from the most recent commit. Additionally the information about last modified date is displayed through javascript, which Serendipity Translator cannot pass. It causes, that all files are always downloaded (more net traffic and more time), and that documentation cannot display properly its status (translated, not translated). Much better is to set the "git native". See below.
+</p>
+Protocol types:
+<ul>
+    <li><b>HTML protocols - svn, cvs, git html</b> - It's easy, these protocols connect to www interface of repository (the same way you can watch them in your internet browser), read its content, parse it and gets the information about plugins and files. These protocols download all files changed from last download. Than the app works with downloaded files.</li>
+    <li><b>folder</b> - Ignores the remote URL settings. Just reads the files from local directory. Does not download anything. It is necessary to update the files outside Serendipity Translator. The date is red form the file's last modified date. It is reason, why next scenario does not work well: to set externally git or cvs file, update it externally and access it through Serendipity Translator "folder" protocol. Because the files updated through git (cvs) do not have the date equivalent to the date of last commit, when they were modified.</li>
+    <li><b>git native</b> - benefits from versioning system git. Currently it ignores the remote URL settings and it cannot set up local repository, nor connect it to remote repository (eg. github). You must do it manually outside of Serendipity Translator. Then you can point Serendipity Translator to local folder with repository, then the app is able to update automatically local repository from remote repository. Serendipity Translator gets the file date not from last-modified property, but from the date of last commit in git, when the file was modified.</li>    
+</ul>
+
 <h2>How the program works internally</h2>
 
-<ul>
 <h3>Filling in messages already set elsewhere</h3>
+<ul>
 <li>In some plugins, especially templates there are some messages that are repeated (copied) from other plugins (mostly templates) frequently. The application stores all messages into its internal database during each comparison. And then if it finds untranslated message whose key is already in database, it fills in the translated message. This supports also the coherency of translation. There is less chance to translate logically the same messages differently.</li>
 </ul>
 
-<ul>
 <h3>Directories it creates</h3>
+<ul>
 <li>plugins - directory with downloaded language files. These files change only after clicking the "Download files" button and downloading the up to date files. It contains the same language files that are available in online plugins repository.</li>
 <li>plugins_translated - There is the result of your translation effort. The publishing of translated files is not automatic. It is up to you to publish them, mainly on serendipity forum (<a href="http://board.s9y.org">board.s9y.org</a>). The plugins are sorted in subdirectories in groups, that are important for serendipity developpers.</li>
 </ul>
 
-<ul><h3>Language file format</h3>
+<h3>Language file format</h3>
+<ul>
 <li>header - it is automatically generated, it contains the information about translation version, translator name (it is taken from Settings dialogue) and date of translation</li>
 <li>The file that is created from the scratch, the first version of the translation, has the messages sorted in the same order as in the english file.</li>
 <li>The file, that was already translated, it means when we make only the update of the file, has the same ordering of messages as the original file. The parts that are not changed, have the same format in both files. New messages are appended at the end of the file. The program tries to preserve the format of messages. It means mainly the caracters between the message name and its content in @define function. So when the main part of language file has the format "@define('BLABLAH',[tab]'blahblah message');" also the new messages will have ",[tab]" in the right place. Also the padding to some position is supported, e.g. if 'blahblah message' starts mostly on column 50, the new messages will start also on column 50.
 </li>
 </ul>
 
-<ul>
 <a name="export_to_zip"></a>
 <h3>Export to zip file</h3>
+<ul>
 <li>Only plugins that are completely translated are exported into zip file. It means that "Translated status" equals to "ok", and plugin is not translated yet, it means when "Status" is not "ok" or if messages in translated file are not the same as messages in downloaded file.</li>
 <li>Only files of current language are exported.</li>
 <li>Documentation files of current language are exported only if documentation status equals "local".</li>
@@ -181,8 +208,11 @@ Fix of exporting files that have identical content, but differ in new line style
 Saving of downloaded files with original timestamp - this avoids false marking of documentation files as not translated.<br />
 Added automatic conversion of documentation files into UTF-8 version.</li>
 
-<li><b>1.10</b><br />(dosud nevydáno) Oprava adresy, na kterou se připojuje při kontrole spojení na berlios.de.<br />
-Přidáno stahování souborů "todo", "copy*", "author(s)" jako dokumentace.
+<li><b>2.0</b> - 2011/12/10<br />
+Added - now also files "todo", "copy*", "author(s)" are downloaded as documentation.<br />
+Added - The "Settings" dialogue was extended. Now it is possible to set the internet repository, from which language files will be downloaded.<br />
+Added - support of git.<br />
+Added - function to update the application. A library is used to access the git, so now the application has more than one file. It is necessarry to download all files in one zip file and then to unpack it.
 </li>
 </ul>
   </body>

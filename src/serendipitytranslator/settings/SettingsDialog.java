@@ -15,18 +15,14 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import serendipitytranslator.mainWindow.MainFrame;
+import serendipitytranslator.repositories.*;
 
 /**
  *
@@ -34,10 +30,10 @@ import serendipitytranslator.mainWindow.MainFrame;
  */
 public class SettingsDialog extends javax.swing.JDialog {
 
-    Point mainWindowPosition = new Point();
-    Dimension mainWindowSize = new Dimension();
-    Point downloadDialogPosition = new Point();
-    Dimension downloadDialogSize = new Dimension();
+    Point mainWindowPosition = new Point(0,0);
+    Dimension mainWindowSize = new Dimension(473,326);
+    Point downloadDialogPosition = new Point(0,326);
+    Dimension downloadDialogSize = new Dimension(451,79);
     PropertyChangeSupport propertyChange;
 
 
@@ -134,26 +130,16 @@ public class SettingsDialog extends javax.swing.JDialog {
 
         jLabel4.setText("Repository type:");
 
-        externPluginsComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "svn", "cvs", "git", "folder" }));
+        externPluginsComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "svn", "cvs", "git html", "git native", "folder" }));
         externPluginsComboBox.setSelectedIndex(1);
 
         jLabel5.setText("URL with plugins:");
 
         externPluginsTextField.setText("http://php-blog.cvs.sourceforge.net/viewvc/php-blog/additional_plugins");
-        externPluginsTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                externPluginsTextFieldActionPerformed(evt);
-            }
-        });
 
         jLabel11.setText("Local folder:");
 
         pluginsFolderTextField.setText("plugins/additional_plugins");
-        pluginsFolderTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                pluginsFolderTextFieldActionPerformed(evt);
-            }
-        });
 
         pluginsBrowseButton.setText("browse...");
         pluginsBrowseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -205,7 +191,7 @@ public class SettingsDialog extends javax.swing.JDialog {
 
         jLabel6.setText("Repository type:");
 
-        coreTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "svn", "cvs", "git", "folder" }));
+        coreTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "svn", "cvs", "git html", "git native", "folder" }));
         coreTypeComboBox.setSelectedIndex(2);
 
         jLabel7.setText("URL - S9y core root:");
@@ -266,26 +252,16 @@ public class SettingsDialog extends javax.swing.JDialog {
 
         jLabel8.setText("Repository type:");
 
-        externThemesComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "svn", "cvs", "git", "folder" }));
+        externThemesComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "svn", "cvs", "git html", "git native", "folder" }));
         externThemesComboBox.setSelectedIndex(1);
 
         jLabel10.setText("URL with themes:");
 
         externThemesTextField.setText("http://php-blog.cvs.sourceforge.net/viewvc/php-blog/additional_themes");
-        externThemesTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                externThemesTextFieldActionPerformed(evt);
-            }
-        });
 
         jLabel12.setText("Local folder:");
 
         themesFolderTextField.setText("plugins/additional_themes");
-        themesFolderTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                themesFolderTextFieldActionPerformed(evt);
-            }
-        });
 
         themesBrowseButton.setText("browse...");
         themesBrowseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -407,22 +383,6 @@ public class SettingsDialog extends javax.swing.JDialog {
         this.setVisible(false);
 }//GEN-LAST:event_closeSettingsButtonActionPerformed
 
-    private void externPluginsTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_externPluginsTextFieldActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_externPluginsTextFieldActionPerformed
-
-    private void externThemesTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_externThemesTextFieldActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_externThemesTextFieldActionPerformed
-
-    private void pluginsFolderTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pluginsFolderTextFieldActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_pluginsFolderTextFieldActionPerformed
-
-    private void themesFolderTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_themesFolderTextFieldActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_themesFolderTextFieldActionPerformed
-
     private void coreBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_coreBrowseButtonActionPerformed
         jFileChooser1.setSelectedFile(new File(coreFolderTextField.getText()));
         if (jFileChooser1.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
@@ -460,7 +420,7 @@ public class SettingsDialog extends javax.swing.JDialog {
         return updateURLTextField.getText();
     }
 
-    public File getSettingsFile() {
+    private File getSettingsFile() {
         return new File("translatorSettings.ini");
     }
 
@@ -645,6 +605,52 @@ public class SettingsDialog extends javax.swing.JDialog {
         return themesFolderTextField.getText();
     }
     
+    private static SimpleFileRepository selectRepository(String repoType) {
+        SimpleFileRepository workingRepository;
+        if (repoType.equals("svn")) {
+            workingRepository = new SvnHTMLRepository();
+        } else if (repoType.equals("git html")) {
+            workingRepository = new GitHTMLRepository();
+        } else if (repoType.equals("git native")) {
+            workingRepository = new GitProtocolRepository();
+        } else if (repoType.equals("folder")) {
+            workingRepository = new SimpleFileRepository();
+        } else {
+            workingRepository = new CvsHTMLRepository();
+        }
+        return workingRepository;
+    }
+    
+    public SimpleFileRepository getCoreRepository() {
+        SimpleFileRepository repository = selectRepository(coreTypeComboBox.getSelectedItem().toString());
+        repository.setRepositoryFolderName(getCoreLocalFolder());
+        repository.setHasInternalPlugins(true);
+        if (repository instanceof AbstractHTMLRepository) {
+            ((AbstractHTMLRepository) repository).setRemoteURL(getCoreUrl());                    
+        }
+        return repository;
+    }
+    
+    public SimpleFileRepository getPluginsRepository() {
+        SimpleFileRepository repository = selectRepository(externPluginsComboBox.getSelectedItem().toString());
+        repository.setRepositoryFolderName(getExternPluginsLocalFolder());
+        repository.setHasInternalPlugins(false);
+        if (repository instanceof AbstractHTMLRepository) {
+            ((AbstractHTMLRepository) repository).setRemoteURL(getExternPluginsUrl());                    
+        }
+        return repository;
+    }
+
+    public SimpleFileRepository getThemesRepository() {
+        SimpleFileRepository repository = selectRepository(externThemesComboBox.getSelectedItem().toString());
+        repository.setRepositoryFolderName(getExternThemesLocalFolder());
+        repository.setHasInternalPlugins(false);
+        if (repository instanceof AbstractHTMLRepository) {
+            ((AbstractHTMLRepository) repository).setRemoteURL(getExternThemesUrl());                    
+        }
+        return repository;
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton closeSettingsButton;
     private javax.swing.JButton coreBrowseButton;

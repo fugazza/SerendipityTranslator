@@ -5,15 +5,13 @@
 
 package ajgl.utils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
+import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 import javax.swing.JOptionPane;
 import serendipitytranslator.mainWindow.PluginDownloader;
@@ -75,12 +73,12 @@ public class ajglTools {
      * @param versionFile URL to internet text file holding newest version string
      * @param version actual Version string to compare with internet version. If these two differs, it is supposed that newer version exist on internet.
      * @param applicationFile URL internet address of newest application jar archive.
-     * @param targetFile File where to save downloaded application.
+     * @param runFile File which shall be run to restart the application.
      * @param appName The name of application for purposes of showing messages.
      * @return false if no new version is available, true if update finished successfully
      * @throws IOException If anything goes bad.
      */
-    public static boolean updater (URL versionFile, String version, URL applicationFile, File targetFile, String appName) throws IOException {
+    public static boolean updater (URL versionFile, String version, URL applicationFile, File runFile, String appName) throws IOException {
         String versionString = "";
         int bytesRead = 0;
         byte buffer[] = new byte[1024];
@@ -100,16 +98,48 @@ public class ajglTools {
             int result = JOptionPane.showConfirmDialog(null, "Newest version of "+appName+" is available. Your version: " + version + ". Newest version: "+versionString+"\r\nUpgrade to new version?","Update to new version",JOptionPane.YES_NO_OPTION,JOptionPane.QUESTION_MESSAGE);
 
             if (result == JOptionPane.OK_OPTION) {
-                ajglTools.download(applicationFile, targetFile, 0l);
+                int lastSlash = applicationFile.getPath().lastIndexOf("/");
+                String remoteFileName = applicationFile.getPath().substring(lastSlash);
+                File localFile = new File(remoteFileName);
+                
+                ajglTools.download(applicationFile, localFile, 0l);
+                
+                /* unpack zipped files */
+                if (localFile.getName().endsWith(".zip")) {
+                    ZipFile zip = new ZipFile(localFile,ZipFile.OPEN_READ | ZipFile.OPEN_DELETE);
+                    ZipEntry entry;
+                    File unzippedFile;
+                    for (Enumeration<? extends ZipEntry> e = zip.entries(); e.hasMoreElements();) {
+                        entry = e.nextElement();
+                        unzippedFile = new File(entry.getName());
+                        System.out.println(unzippedFile.getPath() + "; directory = "+entry.isDirectory());
+                        if (entry.isDirectory()) {
+                            unzippedFile.mkdir();
+                        } else {
+                            is = zip.getInputStream(entry);
+                            FileOutputStream fos = new FileOutputStream(unzippedFile);
+                            while ((bytesRead = is.read(buffer)) != -1) {
+                                fos.write(buffer, 0, bytesRead);
+                            }
+                            fos.close();
+                            is.close();
+                        }
+                    }
+                    zip.close();
+                }
 
-                /* is it a jar file? */
-                if ( targetFile.getName().endsWith(".jar") ) {
-                    String javaBin = System.getProperty("java.home") + "/bin/java";
-                    String  toExec[] = new String[] { javaBin, "-jar", targetFile.getPath() };
-                    try{
-                        Process p = Runtime.getRuntime().exec( toExec );
-                    } catch(Exception e) {
-                        e.printStackTrace();
+                /* do we have to run jar file? */
+                if ( runFile.getName().endsWith(".jar") ) {
+                    if (runFile.exists()) {
+                        String javaBin = System.getProperty("java.home") + "/bin/java";
+                        String  toExec[] = new String[] { javaBin, "-jar", runFile.getPath() };
+                        try{
+                            Process p = Runtime.getRuntime().exec( toExec );
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(null, "The runnable file '"+runFile.getName()+"' necessary to restart the application was not found.\r\nVisit http://vlada.ajgl.cz/archives/170-Serendipity-Translator.html and download newest version of software manually.\r\nThe application will be shut down now.", "Error during update", JOptionPane.ERROR_MESSAGE);
                     }
 
                     System.exit(0);

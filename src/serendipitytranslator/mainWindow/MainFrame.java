@@ -47,7 +47,7 @@ public class MainFrame extends javax.swing.JFrame {
     SettingsDialog settingsDialog = new SettingsDialog(this, true);
     private HashMap<String,String> messageDatabase = null;
     String language;
-    private String version = "1.9";
+    private String version = "2.0";
     PluginDownloader pluginDownloader;
 
     /** Creates new form MainFrame */
@@ -98,7 +98,6 @@ public class MainFrame extends javax.swing.JFrame {
 
         });
         pluginTable.setRowSorter(sorter);
-        updateLanguage();
 
         translateFrame.addPropertyChangeListener(new PropertyChangeListener() {
 
@@ -117,12 +116,14 @@ public class MainFrame extends javax.swing.JFrame {
         });
 
         try {
-            ajglTools.updater(new URL(settingsDialog.getUpdateURL() + "/version.txt"), version, new URL(settingsDialog.getUpdateURL() + "/SerendipityTranslator.jar"), new File("SerendipityTranslator.jar"), "SerendipityTranslator");
+            updateApplication();
         } catch (MalformedURLException ex) {
             Logger.getLogger(MainFrame.class.getName()).log(Level.INFO, ex.getMessage());
         } catch (IOException ex) {
             Logger.getLogger(MainFrame.class.getName()).log(Level.INFO, ex.getMessage());
         }
+
+        updateLanguage();
     }
 
     /** This method is called from within the constructor to
@@ -1130,11 +1131,7 @@ public class MainFrame extends javax.swing.JFrame {
         // download file with latest version number from internet
         try {
             boolean result;
-            result = ajglTools.updater(new URL(settingsDialog.getUpdateURL()+"/version.txt"),
-                              version,
-                              new URL(settingsDialog.getUpdateURL()+"/SerendipityTranslator.jar"),
-                              new File("SerendipityTranslator.jar"),
-                              "SerendipityTranslator");
+            result = updateApplication();
             if (!result) {
                 JOptionPane.showMessageDialog(null, "You have newest version of SerendipityTranslator.","Update to new version",JOptionPane.INFORMATION_MESSAGE);
             }
@@ -1159,6 +1156,14 @@ public class MainFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_formWindowActivated
 
+    private boolean updateApplication() throws MalformedURLException, IOException {
+        return ajglTools.updater(new URL(settingsDialog.getUpdateURL()+"/version.txt"),
+                              version,
+                              new URL(settingsDialog.getUpdateURL()+"/SerendipityTranslator.zip"),
+                              new File("SerendipityTranslator.jar"),
+                              "SerendipityTranslator");        
+    }
+    
     private void generateStats() {
         statLangLabel.setText(language);
 

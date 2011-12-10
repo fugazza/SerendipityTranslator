@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="windows-1250"?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="cs" >
+  <head>
+  <meta http-equiv="content-type" content="text/html; charset=windows-1250" />
+  <title>Serendipity Translator - nápověda</title>
+  </head>
+  <body>
+<h2>Download</h2>
+<p>
+Spustitelný program - <a href="http://vlada.ajgl.cz/serendipity_translator/SerendipityTranslator.jar">SerendipityTranslator.jar</a>
+</p>
+<p>
+Zdrojový kód - <a href="http://vlada.ajgl.cz/serendipity_translator/SerendipityTranslator.zip">SerendipityTranslator.zip</a>
+</p>
+
+<h2>Instalace</h2>
+<ol>
+<li>Ujistěte se, že máte nainstalovaný Java runtime environment ve verzi 6 nebo vyšší. Pokud nemáte, stáhnete z <a href="http://www.java.com/en/download/manual.jsp?locale=en" title="www.java.com">www.java.com</a>.</li>
+
+<li>Stáhnete spustitelný soubor <a href="http://vlada.ajgl.cz/serendipity_translator/SerendipityTranslator.jar">SerendipityTranslator.jar</a> do libovolného adresáře.</li>
+
+<li>Poklepáním na soubor spustíte.</li>
+</ol>
+
+<h2>Návod k použití</h2>
+<h3>Nastavení (klávesová zkratka "S")</h3>
+<!-- s9ymdb:1490 --><img width="498" height="533" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="/uploads/settings_dialog.png" alt="" />
+
+<p>
+Po spuštění je třeba program nastavit. Kliknutím na menu "Settings" (nebo klávesová zkratka "s"). Zadejte <b>jazyk</b>, do kterého chcete překládat z předvybraného seznamu. A také <b>jméno překladatele a jeho emailovou adresu</b>. Na tu se nic nebude posílat, jde pouze o řádku, která bude uložena v přeložených souborech, aby případní další překladatelé věděli, kdo před nimi soubor překládal.
+</p>
+<p>
+<b>do not show plugins without translate file</b> - některé pluginy, zvláště šablony vzhledu, prostě nemají žádné jazykové konstanty, které by se daly přeložit. V seznamu pluginů pak jsou čistě pro informaci. Zaškrtnutím této volby je skryjete, seznam se tak zkrátí a zpřehlední.
+</p>
+<p>
+<b>WWW address with application</b> - Zde můžete zadat vlastní server, ze kterého se budou stahovat aktualizace programu.
+</p>
+<p>
+    <b>Serendipity core</b>, <b>Additional plugins</b>, <b>Additional themes</b> - Zde můžete zadat, pomocí jaké metody (<b>Repository type</b>), z jakého umístění na internetu (<b>URL</b>) se mají aktualizovat jazykové soubory a kam na lokální disk se mají ukládat (<b>Local folder</b>). Výchozí nastavení není třeba měnit, funguje. Pokud se vám zdá stahování pomalé, můžete zkusit toto nastavení změnit. Přečtěte si předtím ale <a href="#protocols">odstavec o přístupových protokolech</a>.
+</p>
+
+<h3>Hlavní okno</h3>
+<h4>Tlačítko "Update plugin list" (klávesová zkratka "U")</h4>
+Po klinutí se program připojí k webovému úložišti s pluginy (Spartacus), stáhne jejich seznam a z informací o pluginech zjistí, který plugin obsahuje či neobsahuje překlad v nastaveném jazyce. V tomto okamžiku program nezná obsah přeložených souborů, ty je třeba stáhnout kliknutím na následující tlačítko. Program v tuto chvíli pouze ví, že soubor s překladem existuje, ale neví, co obsahuje.
+
+<h4>Tlačítko "Download files" (klávesová zkratka "D")</h4>
+Program stáhne soubory překladů - jednak anglické a pak ve vybraném lokálním jazyku (viz. nastavení) a porovná je z hlediska obsahu. Výsledky porovnání viz. odstvec "Tabulka s pluginy". Stahování může být zdlouhavé, proto o průběhu stahování uživatele informuje ukazatel vývoje stahování.
+<!-- s9ymdb:1491 --><img width="540" height="90" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="/uploads/download_progress.png" alt="" />
+<p>Od verze 1.6 program stahuje pouze od minula změněné soubory, takže je stahování trochu rychlejsí. Stahování je navíc možno přerušit stisknutím tlačítka "Cancel". Od zmíněné verze jsou stahovány také soubory dokumentace (documentation_xx.html, readme, ChangeLog). O sledování překladů dokumentace více viz sekce <a href="#documentation">Překlad dokumentace</a>.
+</p>
+
+<h4>Tlačítko "Compare files by content" (klávesová zkratka "C")</h4>
+Pokud z nějakého důvodu nejsou soubory porovnány a tabulka s pluginy ukazuje něco jiného než současný stav (např. po ručním překladu <a href="#documentation">souborů dokumentace</a>), lze program přinutit k opětovnému prohledání jazykových souborů (které jsou uloženy na disku, nic se nestahuje) a jejich porovnání.
+
+<h4>Tabulka s pluginy</h4>
+<ul>
+<li>dvojklik na řádek s pluginem, případně vybrat řádku a "enter" - otevře překládací okno</li>
+
+<li>sloupec "Type":
+   <ol>
+   <li>system - systémový soubor, soubor s hlavními jazykovými zprávami pro serendipity</li>
+   <li>event - jazykový soubor pro plugin události</li>
+   <li>sidebar - jazykový soubor pro postranní plugin</li>
+   <li>template - jazykový soubor pro šablonu vzhledu</li>
+   </ol>
+</li>
+
+<li>sloupec "Internal" - zaškrtnuté pluginy jsou součástí základního balíčku Serendipity, ostatní jsou dostupné z webu nebo pomocí Spartacuse</li>
+
+<li>sloupec "en" a sloupec "loc" - počet zpráv (řádků) v anglickém (lokálním, českém) jazykovém souboru. Tady si můžete vybrat, jestli chcete překládat dlouhé nebo krátké soubory (jsou rychle přeložené). Taky lze podle toho posoudit, jak moc, jak dalece jsou přeloženy částečně přeložené soubory, kolik toho v nich zbývá dopřeložit.</li>
+
+<li>sloupec "Status" a "Translate status":
+   <ol>
+   <li><!-- s9ymdb:1493 --><img width="12" height="12" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="/uploads/ok.png" alt="" /> ok - všechny zprávy (řádky) z anglického souboru jsou přítomny i v lokálním (českém), tedy soubor je úplně přeložen. Neboli číslo v sloupci "en" se shoduje s číslem ve sloupci "loc"</li>
+   <li><!-- s9ymdb:1492 --><img width="12" height="12" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="/uploads/no.png" alt="" /> no - jazykový soubor v lokální verzi vůbec neexistuje, je možno ho přeložit</li>
+   <li><!-- s9ymdb:1494 --><img width="12" height="12" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="/uploads/partial.png" alt="" /> částečně - některé zprávy z anglického souboru jsou přítomny i v lokálním (českém). Neboli číslo v sloupci "en" se neshoduje s číslem ve sloupci "loc". Některé zprávy je třeba dopřeložit.</li>
+   <li><!-- s9ymdb:1495 --><img width="12" height="12" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="/uploads/problem.png" alt="" /> problem - plugin vůbec nemá anglický soubor s jazykovými konstantami, nic tedy ani nelze překládat.</li>
+   </ol>
+
+<p>
+Sloupec "Status" porovnává stažený český soubor s anglickým.
+</p>
+<p>
+Sloupec "Translate status" porovnává již přeložený soubor s anglickým.
+</p>
+
+   Může nastat několik situací.
+   <ol>
+   <li>Pokud u toho samého pluginu je "Status" částečný nebo no, ale "translate status" je ok, znamená to, že jsme soubor již přeložili, ale zatím ho pomocí fóra neposkytli komunitě serendipity, tedy není přístupný na webu, je pouze v našem počítači.</li>
+   <li>"Status" je ok, "Translate status" je no - to znamená, že plugin je úspěšně přeložen, my jsme ho nepřekládali. A ani ho nemusíme překládat.</li>
+   <li>"Status" je částečně nebo no a "Translate status" je částečně. To znamená, že jsme již soubor částečně přeložili, ale nedokončili. Je tedy třeba dokončit překlad a nahrát ho na forum serendipity.</li>
+   </ol>
+
+</li>
+<li>Sloupec "Documentation":
+	Zobrazuje jednu z následujících hodnot týkajících se stavu překladu dokumentace:
+   <ol>
+   <li><!-- s9ymdb:1493 --><img width="12" height="12" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="/uploads/ok.png" alt="" />ok - Český soubor dokumentace existuje (byl stažen ze serveru) a je mladší než anglická dokumentace, tedy je dost dobrý předpoklad, že je překlad kompletní a aktuální.</li>
+   <li><!-- s9ymdb:1496 --><img width="12" height="12" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="/uploads/local.png" alt="" />local - Česká dokumentace neexistuje na serveru, ale mezi přeloženými soubory je a soubor je mladší než anglická dokumentace. Znamená to tedy, že jste dokumentaci už přeložili, jen jste ji ještě nenahráli na server, nezveřejněli světu.</li>   
+   <li><!-- s9ymdb:1492 --><img width="12" height="12" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="/uploads/no.png" alt="" />no - Anglická dokumentace existuje, ale česká nikoliv. Je čas přeložit ji:-) </li>
+   <li><!-- s9ymdb:1494 --><img width="12" height="12" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="/uploads/partial.png" alt="" />partial, částečně - Česká dokumentace existuje na serveru nebo na lokálním počítači, ale anglická dokumentace je mladší. Znamená to, že anglická dokumentace byla aktualizována, ale tyto změny ještě nejsou promítnuty v české dokumentaci. </li>
+   <li><!-- s9ymdb:1495 --><img width="12" height="12" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="/uploads/problem.png" alt="" />problem - Plugin nemá žádnou dokumentaci, není tedy co překládat. </li>
+</ol></li>
+</ul>
+
+<h4>Překládací okno</h4>
+<p>
+V horní části překládacího okna jsou tři pole - název editované zprávy, její znění v angličtině a třetí je znění v češtině.
+</p>
+<p>
+Zprávy jde editovat jak v tabulce, tak ve velkém poli s českým zněním zprávy.
+</p>
+<p>
+Ve status řádku se zobrazuje "original" x "modified" podle toho, zda-li bylo v překladu něco změněno nebo ne. Pokud je status "modified", je možné soubor uložit. Takto uložený soubor se nachází v adresáři "plugins_translated".
+</p>
+Řádky tabulky mohou mít celkem 4 barvy:
+<ul>
+<li>červená - zpráva není přeložená do lokálního jazyka (češtiny)</li>
+<li>zelená - zpráva existuje v lokálním jazyce, ale je totožná s anglickou. Je tedy velmi pravděpodobné, že překladatel před námi pouze zkopíroval anglické zprávy do českého souboru a zapomněl je přeložit.</li>
+<li>žlutá - zpráva existuje v loklním jazyce, ale není v angličtině. Nejspíš byla v nové verzi odstraněna z anglického souboru. Pokud ji chceme odstranit i z českého, smažeme její znění. Prázdné zprávy se při ukládání nezapisují do souboru.</li>
+<li>bílá - zpráva existuje jak v anlgickém, tak v českém souboru, jsou různé, tedy úspěšně přeložené. Úplně přeložené soubory by měly obsahovat většinu bílých a případně zelené řádky (pokud se překlad zprávy shoduje s anglickým zněním).</li>
+</ul>
+
+<a name="documentation"></a><h3>Překládání dokumentace</h3>
+<p>
+Soubory s anglickou dokumentací jsou rozmístěny v různě nazvaných souborech. Anglická dokumentace by sice měla být v souboru "documentation_en.html", ale u spousty pluginů existuje pouze readme (navíc různě pojmenované jako "readme, readme.txt, pluginReadme.txt, credits.txt" nebo ChangeLog). Všechny tyto soubory jsou stahovány ze serveru a je s nimi zacházeno jako s dokumentací.
+</p>
+<p>
+Protože se formát souborů s dokumentací navzájem liší, není v programu žádný nástroj na její překlad. Ten musíte zvládnout sami pomocí vnějšího textového editoru.
+</p>
+<p>
+Pokud chcete využívat výhod sledování stavu překladu dokumentace a jejího automatického zabalování do zip archivu, měli byste uložit přeložené soubory do podadresáře pluginu v adresáři "plugins_translated" a ukládat ji striktně pod jménem souboru "documentation_xx.html", kde "xx" nahraďte zkratkou jazyka. 
+</p>
+<p>
+Od verze programu 1.9 už jsou automaticky vytvářeny soubory dokumentace v kódování utf-8 ze souborů s národním kódováním, pokud soubor utf-8 ještě neexistuje. Nicméně tato funkce má jistá omezení. Soubory v kódování utf-8 mohou být mírně odlišné od souborů v národním kódování. V souborech html je jiná hlavička meta, která obsahuje informaci o kódování použitém v dokumentu. Také odkazy na lokální soubory musí obsahovat navíc předponu "../", aby ukazovaly na správné soubory, nejčastěji obrázky, a aby se tyto nemusely kopírovat do nového adresáře v podadresáři UTF-8. Všechny vyjmenované změny program umí automaticky. Co se týče odkazů, tak ty, které začínají "http://" nebo "mailto:" zůstávají netknuty. Všechny další odlišnosti utf-8 souborů ale musí zajistit překladatel ručně.
+</p>
+<p>
+Soubory jsou do kódování utf-8 převedeny po kliknutí na export, tj. <a href="#export_to_zip">"export translated files to zip file"</a> v menu "translations".
+</p>
+
+<a name="protocols"></a>
+<h3>Protokoly - přístup k internetovým úložištím</h3>
+<p>
+    POZOR! URL adresa internetového úložiště je logicky pevně svázána s typem úložiště - např. github.com poskytuje html rozhraní pro git, sourceforge.net html rozhraní pro cvs. Serendipity Translator tuto závislost nijak nehlídá, takže pokud to nastavíte špatně (například zadáte adresu github.com a k tomu vyberete cvs úložiště), tak vám to nebude fungovat.
+</p>
+<p>
+    POZOR! Výchozí nastavení pro jádro (Serendipity Core) není úplně ideální. V listopadu 2011 došlo k přesunu jádra serendipity ze serveru berlios.de, který ukončil činnost, na github.com. Bohužel html rozhraní githubu, ze kterého Serendipity Translator získává informace o tom, které soubory má stahovat, se obtížněji parsuje, takže je v současnosti přednastavený odkaz na ne úplně poslední commit. Navíc datum poslední změny je přístupné pouze přes javascript, který Serendipity Translator taktéž neumí projít. V důsledku toho se z githubu vždy stahují všechny soubory (větší provoz po síti a déle to trvá) a u dokumentace nefunguje indikace stavu, tj. jestli je nebo není přeložená, protože k tomu je potřeba znát datum poslední změny souboru. V současnosti dobře funguje, pokud nastavíte "git native". Viz níže.
+</p>
+Typy protokolů:
+<ul>
+    <li><b>HTML protokoly - svn, cvs, git html</b> - U těch je to jednoduché - ty se připojí k zadané www adrese, prohlédnou si její obsah, jako to můžete udělat sami v internetovém prohlížeči, vyzobají z něj informace o pluginech a souborech a stáhnou ze serverů na lokální disk soubory změněné od posledního stahování. S lokálními soubory pak dále pracují při překladech.</li>
+    <li><b>folder</b> - Ignoruje nastavení URL adresy pro vzdálený počítač. Prostě jen čte soubory ze zadaného adresáře na lokálním disku. Nic nestahuje, soubory je třeba aktualizovat mimo SerendipityTranslator. Informace o poslední změně souboru se bere z jeho data. Tedy nefunguje příliš dobře varianta, že sami založíte cvs nebo git adresář a ukážete na něj v Serendipity Tranlsatoru pomocí protokolu "folder", protože soubory aktualizované pomocí cvs nebo gitu nemají datum poslední změny shodné s datem posledního commitu, kdy byl soubor měněn.</li>
+    <li><b>git native</b> - využívá vymoženosti verzovacího protokolu git. V současnosti ignoruje zadanou URL adresu a neumí založit lokální git úložiště, ani ho neumí napojit na vzdálené úložiště např. na githubu. To musíte udělat sami, ručně. Jakmile je úložiště založeno a v nastavení Serendipity Translatoru nastavíte lokální adresář na adresář s gitem, Serendipity Translator si už umí úložiště automaticky aktualizovat a vytahat z něj potřebné informace jako datum poslední změny. Datum poslední změny se v tomto případě nebere z data souboru, ale z data posledního commitu, kdy byl soubor změněn.</li>    
+</ul>
+
+<h2>Jak program vnitřně funguje</h2>
+
+<h3>Doplňování jinde již přeložených zpráv</h3>
+<ul>
+<li>V některých pluginech (většinou v šablonách vzhledu) se často opakují některé zprávy. Je to hlavně případ šablon vzhledu, které jejich autoři často vytvářejí kopírováním z jiné šablony, a ponechávají jim přitom původní jazykový soubor nebo ho jen minimálně mění. SerendipityTranslator si při každém porovnání souborů uloží do interní databáze seznam překládaných zpráv, a pokud někdy v budoucnu najde zprávu, která není přeložená, ale jejíž klíč již existuje v databázi, doplní přeloženou zprávu z databáze. Tato funkce podporuje koherenci překladu. Je méně pravděpodobné, že v různých pluginech přeložíte různě zprávu, která by měla být logicky stejná.</li>
+</ul>
+
+<h3>Adresáře, které program vytváří</h3>
+<ul>
+<li>plugins - adresář se staženými soubory. Tyto soubory se mění pouze po klinutí na tlačítko "Download files", nikdy jindy. Obsahují stejné jazykové soubory, které jsou k dispozici v internetovém skladišti.</li>
+<li>plugins_translated - Tady je výsledek Vašich překladů. Zde uložené soubory je nutné k jejich uveřejnění nahrát na diskuzní fórum serenedipity (<a href="http://board.s9y.org">board.s9y.org</a>). Přeložené pluginy jsou tříděny do podadresářů podle různých skupin, které jsou správci serendipity různě spravovány. </li>
+</ul>
+
+<h3>Formát ukládaných souborů</h3>
+<ul>
+<li>hlavička - je standardně generována, obsahuje informace o verzi překladu, jméno překladatele (nastaví se v dialogu nastavení) a datum překladu</li>
+<li>Soubor, který se tvoří z čisté vody načisto, má jazykové konstanty řazené stejně jako anglická předloha</li>
+<li>Soubor, který již má předchůdce, tedy pokud upravujeme existující překlad, má stejné řazení a formátování jako již existující soubor. Části, které se nemění, jsou v obou souborech totožné. Nově přeložené zprávy jsou přidány na konec souboru. Snaha je o zachování stejného formátu (zvláště zarovnání, znaky mezi definicí klíče a textem ve funkci @define).</li>
+</ul>
+
+<a name="export_to_zip"></a>
+<h3>Export do zip archivu</h3>
+<ul>
+<li>Do zip archivu jsou exportovány pouze nové úplně přeložené překlady. To znamená, že "Translated status" musí být "ok" (zelená fajfka) a zároveň "Status" nesmí být "ok" a když je, tak obsah jednotlivých zpráv nesmí být u původního i nově přeloženého souboru totožný.</li>
+<li>Exportovány jsou pouze soubory aktuálního jazyku.</li>
+<li>Soubory dokumentace jsou exportovány pouze pro aktuální jazyk a pokud mají status "local".</li>
+<li>Jsou exportovány jak soubory v místním kódování, tak v UTF-8.</li>
+<li>Export probíhá do jediného zip archivu, ve kterém jsou překlady členěny podle kategorií - internal x external, plugins x templates.</li>
+</ul>
+
+<h2>Řešení problémů</h2>
+<ul>
+<li>Program vytváří soubor "error.log" s chybovými hláškami.</li>
+<li>V případě, že aplikace nefunguje tak, jak je očekáváno, odešlete prosím soubor "error.log" autorovi.</li>
+</ul>
+
+<h2>Licence</h2>
+<p>
+Tento program poskytuji světu pod BSD licencí, jejíž text následuje:
+</p>
+<hr />
+
+Copyright © 2009, Vladimír Ajgl. Všechna práva vyhrazena. 
+<p>
+Redistribuce a použití zdrojových i binárních forem díla, v původním i upravovaném tvaru, jsou povoleny za následujících podmínek:
+</p>
+<ul>
+<li>Šířený zdrojový kód musí obsahovat výše uvedenou informaci o copyrightu, tento seznam podmínek a níže uvedené zřeknutí se odpovědnosti.</li>
+
+<li>Šířený binární tvar musí nést výše uvedenou informaci o copyrightu, tento seznam podmínek a níže uvedené zřeknutí se odpovědnosti ve své dokumentaci a/nebo dalších poskytovaných materiálech.</li>
+
+<li>Ani jméno vlastníka práv, ani jména přispěvatelů nemohou být použita při podpoře nebo právních aktech souvisejících s produkty odvozenými z tohoto software bez výslovného písemného povolení.</li>
+</ul>
+<p>
+TENTO SOFTWARE JE POSKYTOVÁN DRŽITELEM LICENCE A JEHO PŘISPĚVATELI „JAK STOJÍ A LEŽÍ“ A JAKÉKOLIV VÝSLOVNÉ NEBO PŘEDPOKLÁDANÉ ZÁRUKY VČETNĚ, ALE NEJEN, PŘEDPOKLÁDANÝCH OBCHODNÍCH ZÁRUK A ZÁRUKY VHODNOSTI PRO JAKÝKOLIV ÚČEL JSOU POPŘENY. DRŽITEL, ANI PŘISPĚVATELÉ NEBUDOU V ŽÁDNÉM PŘÍPADĚ ODPOVĚDNI ZA JAKÉKOLIV PŘÍMÉ, NEPŘÍMÉ, NÁHODNÉ, ZVLÁŠTNÍ, PŘÍKLADNÉ NEBO VYPLÝVAJÍCÍ ŠKODY (VČETNĚ, ALE NEJEN, ŠKOD VZNIKLÝCH NARUŠENÍM DODÁVEK ZBOŽÍ NEBO SLUŽEB; ZTRÁTOU POUŽITELNOSTI, DAT NEBO ZISKŮ; NEBO PŘERUŠENÍM OBCHODNÍ ČINNOSTI) JAKKOLIV ZPŮSOBENÉ NA ZÁKLADĚ JAKÉKOLIV TEORIE O ZODPOVĚDNOSTI, AŤ UŽ PLYNOUCÍ Z JINÉHO SMLUVNÍHO VZTAHU, URČITÉ ZODPOVĚDNOSTI NEBO PŘEČINU (VČETNĚ NEDBALOSTI) NA JAKÉMKOLIV ZPŮSOBU POUŽITÍ TOHOTO SOFTWARE, I V PŘÍPADĚ, ŽE DRŽITEL PRÁV BYL UPOZORNĚN NA MOŽNOST TAKOVÝCH ŠKOD.
+</p>
+
+<h2>Historie verzí</h2>
+<ul>
+
+<li><b>1.0</b><br />Prerelease verze - otestování základní funkčnosti (stahování seznmu pluginů, editace překladů)</li>
+
+<li><b>1.1</b><br />Přidané údajů o překladech (počet zpráv v překládaném souboru), grafické vylepšení (odlišení překládaných zpráv - podle toho, jestli jsou/nejsou přeložená, zpráva v angličtině je totožná s přeloženou zprávou atp.)</li>
+
+<li><b>1.2</b><br />Úprava uživatelského rozhraní (lišta s menu, nastavení programu ve vlastním dialogu, dialog "o programu", dialog s nápovědou), úprava formátování přeloženého souboru (např. zjišťování formátu již uložených řádků)</li>
+
+<li><b>1.3</b><br />Zjišťování seznamu pluginů z webového rozhraní svn/cvs skladiště pluginů a šablon vzhledů. Export přeložených pluginů do zip archivu. Statistiky.</li>
+
+<li><b>1.4</b><br />Porovnání již stažených souborů při aktualizaci seznamu pluginů. Výpis chybových hlášek do souboru.</li>
+
+<li><b>1.5</b><br />Odstranění problému s (ne)stahováním souborů v některých případech. Přidání automatického doplňování překladu opakujících se zpráv.</li>
+
+<li><b>1.6</b><br />Přidáno sledování stavu dokumentace.<br />
+Přidána funkce automatického zjišťování nových verzí programu a automatické aktualizace.<br />
+Nově stahovány pouze měněné soubory -> rychlejší stahování.
+<br />Přidána možnost přerušení stahování pluginů.</li>
+
+<li><b>1.7</b><br />
+Opravena chyba v (ne)stahování souborů s dokumentací.<br />
+Dialog postupu stahování - ukládání jeho pozice a rozměrů + další vylepšení vzhledu.
+</li>
+
+<li><b>1.8</b><br />
+Přidána kontrola dostupnosti cvs/svn serverů. Při jejich nedostupnosti se zobrazí chybová hláška.
+</li>
+
+<li><b>1.9</b> - 10.7.2011<br />
+Oprava - nyní se stahují i soubory, které jsou staré pouze několik sekund.<br />
+Oprava exportu souborů, které mají stejný obsah, ale liší se ve znacích ukončení řádků (\n - unixový styl nebo \r\n - styl windows). Nyní jsou považovány za identické.<br />
+Ukládání stažených souborů s origiálním časovým razítkem. To eliminuje falešné označování dokumentace jako nepřeložené.<br />
+Přidána automatická konverze souborů dokumentace do kódování utf-8.</li>
+
+<li><b>2.0</b> - 10.12.2011<br />
+Přidáno stahování souborů "todo", "copy*", "author(s)" jako dokumentace.<br />
+Rozšířen dialog "nastavení". Nyní je možné nastavit, ze kterého internetového úložiště se mají stahovat zdrojové soubory.<br />
+Přidána podpora Gitu.<br />
+Přepracována funkce na aktualizaci softwaru - pro git se používá knihovna, takže se program rozrostl na více souborů, které je třeba stahovat v zip souboru a následně rozbalit.
+</li>
+
+</ul>
+
+<h2>Autor</h2>
+Vladimír Ajgl, 2009-2011 (c)
+  </body>
+</html>

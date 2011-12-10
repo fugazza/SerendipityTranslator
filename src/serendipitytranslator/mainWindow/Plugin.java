@@ -226,22 +226,22 @@ public final class Plugin implements Comparator {
 
         //JOptionPane.showMessageDialog(null, "before doc status");
         // --------------- set status for documentation files ------------------
-        File enDocFile = new File(repository.getRepositoryFolderName()+"/"+folderInRepository+ "/" + getDocFileNameEn());
-        File csDocFile = new File(repository.getRepositoryFolderName()+"/"+folderInRepository+ "/" + getDocFileNameLoc());
+        SerendipityFileInfo enDocFile = getFileInfo(folderInRepository,getDocFileNameEn());
+        SerendipityFileInfo csDocFile = getFileInfo(folderInRepository,getDocFileNameLoc());
         File csDocFileLocal = new File(LangFile.getTranslatedDirName(name)+ "/" + getDocFileNameLoc());
         
-        if (!enDocFile.exists()) {
+        if (enDocFile == null) { // english documentation file does not exist
             setDocumentationStatus(DocumentationStatus.problem);
-        } else if (csDocFile.exists()) {
-            if (csDocFile.lastModified() > enDocFile.lastModified()) {
+        } else if (csDocFile != null) { // documentation in local language exists
+            if (csDocFile.getFileDate() > enDocFile.getFileDate()) {
                 setDocumentationStatus(DocumentationStatus.translated);
-            } else if (csDocFileLocal.exists() && (csDocFileLocal.lastModified() > enDocFile.lastModified())) {
+            } else if (csDocFileLocal.exists() && (csDocFileLocal.lastModified() > enDocFile.getFileDate())) {
                 setDocumentationStatus(DocumentationStatus.local);
             } else {
                 setDocumentationStatus(DocumentationStatus.partial);
             }
-        } else if (csDocFileLocal.exists()) {
-            if (csDocFileLocal.lastModified() > enDocFile.lastModified()) {
+        } else if (csDocFileLocal.exists()) { // documentation in local languge exist only in translated direcotry
+            if (csDocFileLocal.lastModified() > enDocFile.getFileDate()) {
                 setDocumentationStatus(DocumentationStatus.local);
             } else {
                 setDocumentationStatus(DocumentationStatus.partial);
@@ -272,6 +272,16 @@ public final class Plugin implements Comparator {
         propertyChange.firePropertyChange("plugin_files_compared", null, this);
    }
 
+    private SerendipityFileInfo getFileInfo(String folder, String filename) {
+        SerendipityFileInfo info = null;
+        for (SerendipityFileInfo i: repository.getFileList(folder)) {
+            if (i.getFilename().equals(filename)) {
+                return i;
+            }
+        }
+        return info;
+    }
+    
     public int compare(Object plugin1, Object plugin2) {
         if ((plugin1 instanceof Plugin) && (plugin2 instanceof Plugin)) {
             return ((Plugin) plugin1).getName().compareToIgnoreCase(((Plugin) plugin2).getName());
@@ -306,16 +316,15 @@ public final class Plugin implements Comparator {
         String readmeFile = null;
         long newest = 0;
         String filename;
-        for (SerendipityFileInfo fileName: repository.getFileList(folderInRepository)) {
-            filename = fileName.getFilename();
+        for (SerendipityFileInfo file: repository.getFileList(folderInRepository)) {
+            filename = file.getFilename();
             //System.out.println(name + ": " + filename);
             if (filename.equals("documentation_en.html")) {
                 return "documentation_en.html";
             } else if (isDocReadme(filename)) {
-                File enDocFile = new File(getFolder() + "/" + filename);
-                if (enDocFile.lastModified() > newest) {
+                if (file.getFileDate() > newest) {
                     readmeFile = filename;
-                    newest = enDocFile.lastModified();
+                    newest = file.getFileDate();
                 }
             }
         }

@@ -26,6 +26,10 @@ public abstract class AbstractHTMLRepository extends AbstractUpdatableRepository
     private String remoteUrl;
     protected HashMap<String, ArrayList<SerendipityFileInfo>> filelists = new HashMap<String, ArrayList<SerendipityFileInfo>>();
     
+    public boolean isAvailable() {
+        return ajglTools.checkInternetConnection(getRemoteURL());
+    }
+    
     private String getRemoteRepositoryFolder (String folderPath, boolean checkout) {
         String folder = getRemoteURL() + "/" + folderPath;
         if (checkout) {

@@ -51,32 +51,10 @@ public class PluginList extends ArrayList<Plugin> {
         propertyChange.addPropertyChangeListener(listener);
     }
 
-    private static SimpleFileRepository selectRepository(String repoType) {
-        SimpleFileRepository workingRepository;
-        if (repoType.equals("svn")) {
-            workingRepository = new SvnHTMLRepository();
-        } else if (repoType.equals("git")) {
-            workingRepository = new GitHTMLRepository();
-        } else if (repoType.equals("folder")) {
-            workingRepository = new SimpleFileRepository();
-        } else {
-            workingRepository = new CvsHTMLRepository();
-        }
-        return workingRepository;
-    }
-    
     public void loadFromWeb() {
-        SimpleFileRepository coreRepository = selectRepository(settings.getCoreType());
-        coreRepository.setRepositoryFolderName(settings.getCoreLocalFolder());
-        coreRepository.setHasInternalPlugins(true);
-
-        SimpleFileRepository pluginsRepository = selectRepository(settings.getExternPluginsType());
-        pluginsRepository.setRepositoryFolderName(settings.getExternPluginsLocalFolder());
-        pluginsRepository.setHasInternalPlugins(false);
-
-        SimpleFileRepository themesRepository = selectRepository(settings.getExternThemesType());
-        themesRepository.setRepositoryFolderName(settings.getExternThemesLocalFolder());
-        themesRepository.setHasInternalPlugins(false);
+        SimpleFileRepository coreRepository = settings.getCoreRepository();
+        SimpleFileRepository pluginsRepository = settings.getPluginsRepository();
+        SimpleFileRepository themesRepository = settings.getThemesRepository();
         
         boolean downloadsRequired = coreRepository.isUpdatable() || pluginsRepository.isUpdatable() || themesRepository.isUpdatable();
         boolean internetAvailable = ajglTools.checkInternetConnection();
@@ -96,12 +74,9 @@ public class PluginList extends ArrayList<Plugin> {
 
             //System.out.println("Internals will be loaded.");
             boolean coreRepAvailable = true;
-            if (coreRepository instanceof AbstractHTMLRepository) {
-                if (ajglTools.checkInternetConnection(settings.getCoreUrl())) {
-                    ((AbstractHTMLRepository) coreRepository).setRemoteURL(settings.getCoreUrl());                    
-                } else {
-                    coreRepAvailable = false;
-                }
+            if (coreRepository instanceof AbstractHTMLRepository
+                    && !((AbstractHTMLRepository) coreRepository).isAvailable()) {
+                coreRepAvailable = false;
             }
             if (coreRepAvailable) {
                 coreRepository.loadListOfPlugins(this, "plugins", language, true);
@@ -112,12 +87,9 @@ public class PluginList extends ArrayList<Plugin> {
 
             //System.out.println("External plugins be loaded.");
             boolean pluginRepAvailable = true;
-            if (pluginsRepository instanceof AbstractHTMLRepository) {
-                if (ajglTools.checkInternetConnection(settings.getExternPluginsUrl())) {
-                    ((AbstractHTMLRepository) pluginsRepository).setRemoteURL(settings.getExternPluginsUrl());                    
-                } else {
-                    pluginRepAvailable = false;
-                }
+            if (pluginsRepository instanceof AbstractHTMLRepository
+                    && !((AbstractHTMLRepository) pluginsRepository).isAvailable()) {
+                pluginRepAvailable = false;
             }
             if (pluginRepAvailable) {
                 pluginsRepository.loadListOfPlugins(this, "", language, false);
@@ -270,26 +242,9 @@ public class PluginList extends ArrayList<Plugin> {
     }
 
     public static PluginList loadFromLocalDb(String language) {
-        SimpleFileRepository coreRepository = selectRepository(settings.getCoreType());
-        coreRepository.setRepositoryFolderName(settings.getCoreLocalFolder());
-        coreRepository.setHasInternalPlugins(true);
-        if (coreRepository instanceof AbstractHTMLRepository) {
-            ((AbstractHTMLRepository) coreRepository).setRemoteURL(settings.getCoreUrl());
-        }
-        
-        SimpleFileRepository pluginsRepository = selectRepository(settings.getExternPluginsType());
-        pluginsRepository.setRepositoryFolderName(settings.getExternPluginsLocalFolder());
-        pluginsRepository.setHasInternalPlugins(false);
-        if (pluginsRepository instanceof AbstractHTMLRepository) {
-            ((AbstractHTMLRepository) pluginsRepository).setRemoteURL(settings.getExternPluginsUrl());
-        }
-
-        SimpleFileRepository themesRepository = selectRepository(settings.getExternThemesType());
-        themesRepository.setRepositoryFolderName(settings.getExternThemesLocalFolder());
-        themesRepository.setHasInternalPlugins(false);
-        if (themesRepository instanceof AbstractHTMLRepository) {
-            ((AbstractHTMLRepository) themesRepository).setRemoteURL(settings.getExternThemesUrl());
-        }
+        SimpleFileRepository coreRepository = settings.getCoreRepository();
+        SimpleFileRepository pluginsRepository = settings.getPluginsRepository();
+        SimpleFileRepository themesRepository = settings.getThemesRepository();
         
         PluginList plugins = new PluginList(language);
         try {
