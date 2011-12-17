@@ -29,6 +29,8 @@ import serendipitytranslator.mainWindow.SerendipityFileInfo;
  */
 public class GitHTMLRepository extends AbstractHTMLRepository {
 
+    String gitRemoteUrl = "";
+    
     @Override
     public void loadListOfPlugins(PluginList plugins, String folderPath, String language, boolean isIntern) {
         String urlString = getRemoteURL();
@@ -54,11 +56,19 @@ public class GitHTMLRepository extends AbstractHTMLRepository {
             is = url.openStream();
             int c = is.read();
             Plugin p;
-
+            String permalink = "";
+            
             while (c != -1) {
-                if (c == '<' && followsInReader(is,"a ")) {
+                if (c == '<' && followsInReader(is,"link rel='permalink' href='")) {
+                    while ((c=is.read()) != '\'') {
+                        permalink += new String(Character.toChars(c));
+                    }                
+                    //System.out.println("permalink = " + permalink);
+                    gitRemoteUrl = server+permalink.replaceFirst("/"+dirname, "");
+                }
+                if (c == '<' && followsInReader(is," href=\"")) {
                     //System.out.println("mám <a ");
-                    if (followsInReader(is,"href=\"/" + projectRoot+"/"+dirname+"/")) {
+                    if (permalink.length() > 0 && followsInReader(is,permalink+"/")) { //"href=\"/" + projectRoot+"/"+dirname+"/"
                         //System.out.println("mám plugin");
                         String pluginName = "";
                         while ((c=is.read()) != '"') {
@@ -112,6 +122,7 @@ public class GitHTMLRepository extends AbstractHTMLRepository {
         String server;
         String origFolder;
         String folder;
+        String folderInHtml;
 
         Pattern pattern = Pattern.compile("(https?://[^/]*)/(.*)");
         Matcher m = pattern.matcher(urlString);
@@ -119,7 +130,8 @@ public class GitHTMLRepository extends AbstractHTMLRepository {
         server = m.group(1);
         origFolder = m.group(2);
         folder = modifyFolderForFiles(origFolder);
-        //System.out.println("Plugin filelist download started. url = " + urlString);
+        folderInHtml = "/"+folder;
+        System.out.println("Plugin filelist download started. url = " + urlString);
 
         InputStream is = null;
         try {
@@ -127,11 +139,18 @@ public class GitHTMLRepository extends AbstractHTMLRepository {
             URL url = new URL(server+"/"+folder);
             is = url.openStream();
             int c = is.read();
+            String permalink = "";
 
             while (c != -1) {
-                if (c == '<' && followsInReader(is,"a ")) {
+                if (c == '<' && followsInReader(is,"link rel='permalink' href='")) {
+                    while ((c=is.read()) != '\'') {
+                        permalink += new String(Character.toChars(c));
+                    }                    
+                    folderInHtml = modifyFolderForFiles(permalink);
+                }
+                if (c == '<' && followsInReader(is," href=\"")) {
                     //System.out.println("have <a ");
-                    if (followsInReader(is,"href=\"/"+folder+"/")) {
+                    if (followsInReader(is,folderInHtml+"/")) {
                         String fileName = "";
                         String age = "";
 
@@ -159,14 +178,20 @@ public class GitHTMLRepository extends AbstractHTMLRepository {
                         filelist.add(new SerendipityFileInfo(fileName,
                                                             parseFileDate(age))
                                                             );
-                        //System.out.println("added file '"+fileName+"'; age "+age);
+                        System.out.println("added file '"+fileName+"'; age "+age);
                     }
 
                 } else {
                     c=is.read();
                 }
             }
-
+            
+//            if (folderPath.equals("plugins/serendipity_event_creativecommons")) {
+//                is = url.openStream();
+//                while ((c=is.read()) != -1) {
+//                    System.out.print(Character.toChars(c));
+//                }
+//            }
             is.close();
         } catch (MalformedURLException ex) {
             Logger.getLogger(PluginList.class.getName()).log(Level.SEVERE, null, ex);
@@ -197,5 +222,14 @@ public class GitHTMLRepository extends AbstractHTMLRepository {
 
     private String modifyFolderForFiles(String origFolder) {
         return origFolder.replaceFirst("tree", "blob");
+    }
+
+    @Override
+    public String getRemoteURL() {
+        if (gitRemoteUrl.length() > 0) {
+            return gitRemoteUrl;
+        } else {
+            return super.getRemoteURL();
+        }
     }
 }

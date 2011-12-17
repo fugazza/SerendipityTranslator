@@ -41,6 +41,7 @@ public class SettingsDialog extends javax.swing.JDialog {
     public SettingsDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        setDefaults();
         propertyChange= new PropertyChangeSupport(this);
         readSettingsFromFile(getSettingsFile());
     }
@@ -87,6 +88,7 @@ public class SettingsDialog extends javax.swing.JDialog {
         jLabel12 = new javax.swing.JLabel();
         themesFolderTextField = new javax.swing.JTextField();
         themesBrowseButton = new javax.swing.JButton();
+        resetButton = new javax.swing.JButton();
 
         jFileChooser1.setDialogTitle("Choose directory");
         jFileChooser1.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY);
@@ -124,8 +126,6 @@ public class SettingsDialog extends javax.swing.JDialog {
 
         jLabel9.setText("WWW address with application:");
 
-        updateURLTextField.setText("http://vlada.ajgl.cz/serendipity_translator");
-
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Additional plugins"));
 
         jLabel4.setText("Repository type:");
@@ -134,8 +134,6 @@ public class SettingsDialog extends javax.swing.JDialog {
         externPluginsComboBox.setSelectedIndex(1);
 
         jLabel5.setText("URL with plugins:");
-
-        externPluginsTextField.setText("http://php-blog.cvs.sourceforge.net/viewvc/php-blog/additional_plugins");
 
         jLabel11.setText("Local folder:");
 
@@ -196,8 +194,6 @@ public class SettingsDialog extends javax.swing.JDialog {
 
         jLabel7.setText("URL - S9y core root:");
 
-        coreUrlTextField.setText("https://github.com/s9y/Serendipity/tree/3d4e3e92c00f635853adfd196a6b67186e0523cc");
-
         jLabel3.setText("Local folder:");
 
         coreFolderTextField.setText("plugins/Serendipity");
@@ -257,8 +253,6 @@ public class SettingsDialog extends javax.swing.JDialog {
 
         jLabel10.setText("URL with themes:");
 
-        externThemesTextField.setText("http://php-blog.cvs.sourceforge.net/viewvc/php-blog/additional_themes");
-
         jLabel12.setText("Local folder:");
 
         themesFolderTextField.setText("plugins/additional_themes");
@@ -309,6 +303,13 @@ public class SettingsDialog extends javax.swing.JDialog {
                     .addComponent(themesBrowseButton)))
         );
 
+        resetButton.setText("Reset to default settings");
+        resetButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -316,23 +317,29 @@ public class SettingsDialog extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(problemPluginsCheckBox)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addGap(30, 30, 30)
-                        .addComponent(langComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addGap(18, 18, 18)
-                        .addComponent(translatorTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE))
+                        .addComponent(translatorTextField))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel9)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(updateURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 272, Short.MAX_VALUE))
+                        .addComponent(updateURLTextField))
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(closeSettingsButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(closeSettingsButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(resetButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(problemPluginsCheckBox)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel2)
+                                .addGap(30, 30, 30)
+                                .addComponent(langComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -359,7 +366,9 @@ public class SettingsDialog extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(closeSettingsButton)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(closeSettingsButton)
+                    .addComponent(resetButton))
                 .addContainerGap())
         );
 
@@ -404,6 +413,20 @@ public class SettingsDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_themesBrowseButtonActionPerformed
 
+    private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
+        setDefaults();
+    }//GEN-LAST:event_resetButtonActionPerformed
+
+    private void setDefaults() {
+        updateURLTextField.setText("http://vlada.ajgl.cz/serendipity_translator");
+        coreTypeComboBox.setSelectedIndex(2);
+        coreUrlTextField.setText("https://github.com/s9y/Serendipity/tree/master");
+        externPluginsComboBox.setSelectedIndex(1);
+        externPluginsTextField.setText("http://php-blog.cvs.sourceforge.net/viewvc/php-blog/additional_plugins");
+        externThemesComboBox.setSelectedIndex(1);
+        externThemesTextField.setText("http://php-blog.cvs.sourceforge.net/viewvc/php-blog/additional_themes");
+    }
+    
     public String getLanguage() {
         return (String) langComboBox.getSelectedItem();
     }
@@ -681,6 +704,7 @@ public class SettingsDialog extends javax.swing.JDialog {
     private javax.swing.JButton pluginsBrowseButton;
     private javax.swing.JTextField pluginsFolderTextField;
     private javax.swing.JCheckBox problemPluginsCheckBox;
+    private javax.swing.JButton resetButton;
     private javax.swing.JButton themesBrowseButton;
     private javax.swing.JTextField themesFolderTextField;
     private javax.swing.JTextField translatorTextField;
