@@ -30,6 +30,7 @@ import serendipitytranslator.mainWindow.SerendipityFileInfo;
 public class GitHTMLRepository extends AbstractHTMLRepository {
 
     String gitRemoteUrl = "";
+    String permalink = "";
     
     @Override
     public void loadListOfPlugins(PluginList plugins, String folderPath, String language, boolean isIntern) {
@@ -56,45 +57,37 @@ public class GitHTMLRepository extends AbstractHTMLRepository {
             is = url.openStream();
             int c = is.read();
             Plugin p;
-            String permalink = "";
             
             while (c != -1) {
-                if (c == '<' && followsInReader(is,"link rel='permalink' href='")) {
-                    while ((c=is.read()) != '\'') {
-                        permalink += new String(Character.toChars(c));
-                    }                
-                    //System.out.println("permalink = " + permalink);
+                if (c == '<' && followsPermalink(is)) {
                     gitRemoteUrl = server+permalink.replaceFirst("/"+dirname, "");
                 }
-                if (c == '<' && followsInReader(is," href=\"")) {
-                    //System.out.println("mám <a ");
-                    if (permalink.length() > 0 && followsInReader(is,permalink+"/")) { //"href=\"/" + projectRoot+"/"+dirname+"/"
-                        //System.out.println("mám plugin");
-                        String pluginName = "";
-                        while ((c=is.read()) != '"') {
-                            pluginName += new String(Character.toChars(c));
-                        }
+                if (c == '<' && followsFileOrFolderLink(is," href=\"/" + projectRoot+"/"+dirname+"/")) {
+                    //System.out.println("mám plugin");
+                    String pluginName = "";
+                    while ((c=is.read()) != '"') {
+                        pluginName += new String(Character.toChars(c));
+                    }
 
-                        //System.out.println("plugin: " + pluginName);
-                        if (!pluginName.contains("..") && !pluginName.contains("http://")) {
-                            //System.out.println("Plugin found = " + pluginName);
-                            p = new Plugin(pluginName,language);
-                            if (dirname.contains("plugins")) {
-                                if (p.getType().equals(PluginType.template)) {
-                                    p.setType(PluginType.event);
-                                }
-                            } else {
-                                p.setType(PluginType.template);
+                    //System.out.println("plugin: " + pluginName);
+                    if (!pluginName.contains("..") && !pluginName.contains("http://")) {
+                        //System.out.println("Plugin found = " + pluginName);
+                        p = new Plugin(pluginName,language);
+                        if (dirname.contains("plugins")) {
+                            if (p.getType().equals(PluginType.template)) {
+                                p.setType(PluginType.event);
                             }
-                            p.setIntern(isIntern);
-                            p.setRepository(this);
-                            String pluginFolderPath = pluginName;
-                            if (folderPath.length() > 0) {
-                                pluginFolderPath = folderPath + "/" + pluginName;
-                            }
-                            p.setFolderInRepository(pluginFolderPath);
-                            plugins.add(p);
+                        } else {
+                            p.setType(PluginType.template);
                         }
+                        p.setIntern(isIntern);
+                        p.setRepository(this);
+                        String pluginFolderPath = pluginName;
+                        if (folderPath.length() > 0) {
+                            pluginFolderPath = folderPath + "/" + pluginName;
+                        }
+                        p.setFolderInRepository(pluginFolderPath);
+                        plugins.add(p);
                     }
                 } else {
                     c=is.read();
@@ -139,48 +132,40 @@ public class GitHTMLRepository extends AbstractHTMLRepository {
             URL url = new URL(server+"/"+folder);
             is = url.openStream();
             int c = is.read();
-            String permalink = "";
 
             while (c != -1) {
-                if (c == '<' && followsInReader(is,"link rel='permalink' href='")) {
-                    while ((c=is.read()) != '\'') {
-                        permalink += new String(Character.toChars(c));
-                    }                    
+                if (c == '<' && followsPermalink(is)) {
                     folderInHtml = modifyFolderForFiles(permalink);
                 }
-                if (c == '<' && followsInReader(is," href=\"")) {
-                    //System.out.println("have <a ");
-                    if (followsInReader(is,folderInHtml+"/")) {
-                        String fileName = "";
-                        String age = "";
+                if (c == '<' && followsFileOrFolderLink(is," href=\"/" + folder+"/")) {
+                    String fileName = "";
+                    String age = "";
 
-                        //System.out.println("have folder");
-                        while ((c=is.read()) != '"') {
-                            fileName += new String(Character.toChars(c));
-                        }
-                        //System.out.println("filename = "+fileName);
+                    //System.out.println("have folder");
+                    while ((c=is.read()) != '"') {
+                        fileName += new String(Character.toChars(c));
+                    }
+                    //System.out.println("filename = "+fileName);
 
-                        while (c !=-1) {
-                            if ((c=is.read()) == '<' && followsInReader(is,"td")) {
-                                if (followsInReader(is," class=\"age\"")) {
-                                    while (!((c=is.read()) == ' ' && followsInReader(is,"title=\"")) && c!= '/') {
-                                    }
-
-                                    while (!(c== '/' || (c=is.read()) == '"')) {
-                                        age += new String(Character.toChars(c));
-                                    }
-                                } else {
-                                    break;
+                    while (c !=-1) {
+                        if ((c=is.read()) == '<' && followsInReader(is,"td")) {
+                            if (followsInReader(is," class=\"age\"")) {
+                                while (!((c=is.read()) == ' ' && followsInReader(is,"title=\"")) && c!= '/') {
                                 }
+
+                                while (!(c== '/' || (c=is.read()) == '"')) {
+                                    age += new String(Character.toChars(c));
+                                }
+                            } else {
+                                break;
                             }
                         }
-                        //System.out.println("age = " +age);
-                        filelist.add(new SerendipityFileInfo(fileName,
-                                                            parseFileDate(age))
-                                                            );
-                        System.out.println("added file '"+fileName+"'; age "+age);
                     }
-
+                    //System.out.println("age = " +age);
+                    filelist.add(new SerendipityFileInfo(fileName,
+                                                        parseFileDate(age))
+                                                        );
+                    System.out.println("added file '"+fileName+"'; age "+age);
                 } else {
                     c=is.read();
                 }
@@ -226,10 +211,60 @@ public class GitHTMLRepository extends AbstractHTMLRepository {
 
     @Override
     public String getRemoteURL() {
-        if (gitRemoteUrl.length() > 0) {
-            return gitRemoteUrl;
+//        if (gitRemoteUrl.length() > 0) {
+//            return gitRemoteUrl;
+//        } else {
+//            return super.getRemoteURL();
+//        }
+        return super.getRemoteURL();
+    }
+    
+    private boolean followsPermalink(InputStream is) throws IOException {
+        int c;
+        if (followsInReader(is,"link rel='permalink' href='")) {
+            permalink = "";
+            while ((c=is.read()) != '\'') {
+                permalink += new String(Character.toChars(c));
+            }
+            //System.out.println("permalink = " + permalink);
+            return true;
         } else {
-            return super.getRemoteURL();
+            return false;
+        }        
+    }
+    
+    private String getPermalink() {
+        return permalink;
+    }
+    
+    private boolean followsFileOrFolderLink(InputStream is, String str) throws IOException {        
+        int i, c;
+        int pos = str.indexOf("master");
+        
+        if (pos != -1) {
+            String beforeMaster = str.substring(0, pos);
+            String afterMaster = str.substring(pos+6);
+            //System.out.println(str + "; "+ pos +"; "+beforeMaster + "; "+afterMaster);
+            if (followsInReader(is,beforeMaster)) {
+                for(i=0; i<40; i++) {
+                    c = is.read();
+                    if (((c >= 'a') && (c <='f')) || ((c>='0') && (c <='9'))) {
+                        continue;
+                    } else {
+                        return false;
+                    }
+                }
+                if (followsInReader(is,afterMaster)) {
+                    return true;
+                } else {
+                    return false;
+                }                    
+            } else {
+                return false;
+            }        
+        } else {
+            //System.out.println(str + "; "+ pos +"; ");
+            return followsInReader(is,str);
         }
     }
 }

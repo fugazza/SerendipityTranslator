@@ -229,6 +229,9 @@ public final class Plugin implements Comparator {
         SerendipityFileInfo enDocFile = getFileInfo(folderInRepository,getDocFileNameEn());
         SerendipityFileInfo csDocFile = getFileInfo(folderInRepository,getDocFileNameLoc());
         File csDocFileLocal = new File(LangFile.getTranslatedDirName(name)+ "/" + getDocFileNameLoc());
+//        if (enDocFile != null) {
+//            System.out.println(name + ": en " + enDocFile.getFilename() + "; cs "+csDocFile+"; folder = "+folderInRepository);
+//        }
         
         if (enDocFile == null) { // english documentation file does not exist
             setDocumentationStatus(DocumentationStatus.problem);

@@ -31,6 +31,7 @@ import java.util.zip.ZipOutputStream;
 import javax.swing.JOptionPane;
 import javax.swing.RowFilter;
 import javax.swing.RowFilter.Entry;
+import javax.swing.SwingWorker;
 import javax.swing.table.TableRowSorter;
 import serendipitytranslator.settings.SettingsDialog;
 import serendipitytranslator.translationWindow.LangFile;
@@ -49,6 +50,7 @@ public class MainFrame extends javax.swing.JFrame {
     String language;
     private String version = "2.0";
     PluginDownloader pluginDownloader;
+    SwingWorker worker;
 
     /** Creates new form MainFrame */
     public MainFrame() {
@@ -65,7 +67,6 @@ public class MainFrame extends javax.swing.JFrame {
         PluginList.setSettings(settingsDialog);
         language = settingsDialog.getLanguage();
         settingsDialog.setMainWindowSizeAndPosition(this);
-        settingsDialog.setDownloadDialogSizeAndPosition(downloadDialog);
         translateFrame.setLocation(this.getX()+this.getWidth(), 0);
 
         settingsDialog.addPropertyChangeListener(new PropertyChangeListener() {
@@ -135,10 +136,6 @@ public class MainFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        downloadDialog = new javax.swing.JDialog();
-        downloadProgressBar = new javax.swing.JProgressBar();
-        downloadstatusLabel = new javax.swing.JLabel();
-        downloadCancelButton = new javax.swing.JButton();
         licenseDialog = new javax.swing.JDialog();
         jLabel3 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -199,6 +196,9 @@ public class MainFrame extends javax.swing.JFrame {
         listButton = new javax.swing.JButton();
         downloadButton = new javax.swing.JButton();
         compareButton = new javax.swing.JButton();
+        downloadCancelButton = new javax.swing.JButton();
+        downloadProgressBar = new javax.swing.JProgressBar();
+        jSeparator6 = new javax.swing.JSeparator();
         jMenuBar1 = new javax.swing.JMenuBar();
         applicationMenu = new javax.swing.JMenu();
         updateListMenuItem = new javax.swing.JMenuItem();
@@ -216,44 +216,6 @@ public class MainFrame extends javax.swing.JFrame {
         licenseMenuItem = new javax.swing.JMenuItem();
         updateMenuItem = new javax.swing.JMenuItem();
         aboutMenuItem = new javax.swing.JMenuItem();
-
-        downloadDialog.setTitle("Plugin files download");
-        downloadDialog.setMinimumSize(new java.awt.Dimension(500, 100));
-
-        downloadstatusLabel.setText("Plugin download started");
-
-        downloadCancelButton.setText("Cancel download");
-        downloadCancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                downloadCancelButtonActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout downloadDialogLayout = new javax.swing.GroupLayout(downloadDialog.getContentPane());
-        downloadDialog.getContentPane().setLayout(downloadDialogLayout);
-        downloadDialogLayout.setHorizontalGroup(
-            downloadDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(downloadDialogLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(downloadDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(downloadstatusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
-                    .addGroup(downloadDialogLayout.createSequentialGroup()
-                        .addComponent(downloadCancelButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(downloadProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        downloadDialogLayout.setVerticalGroup(
-            downloadDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(downloadDialogLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(downloadstatusLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(downloadDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(downloadProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
-                    .addComponent(downloadCancelButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(25, 25, 25))
-        );
 
         licenseDialog.setTitle("Serendipity Translator License Terms");
         licenseDialog.setMinimumSize(new java.awt.Dimension(530, 520));
@@ -635,15 +597,12 @@ public class MainFrame extends javax.swing.JFrame {
                     .addComponent(statDocNoLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(closeStatsButton)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Serendipity translator");
         addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowActivated(java.awt.event.WindowEvent evt) {
-                formWindowActivated(evt);
-            }
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 formWindowClosing(evt);
             }
@@ -729,6 +688,15 @@ public class MainFrame extends javax.swing.JFrame {
                     .addComponent(compareButton))
                 .addContainerGap())
         );
+
+        downloadCancelButton.setText("Cancel");
+        downloadCancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                downloadCancelButtonActionPerformed(evt);
+            }
+        });
+
+        downloadProgressBar.setStringPainted(true);
 
         applicationMenu.setText("Application");
         applicationMenu.addActionListener(new java.awt.event.ActionListener() {
@@ -854,11 +822,16 @@ public class MainFrame extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jSeparator6)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(downloadCancelButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(downloadProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -867,8 +840,13 @@ public class MainFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 227, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(downloadCancelButton)
+                    .addComponent(downloadProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
 
         pack();
@@ -884,44 +862,55 @@ public class MainFrame extends javax.swing.JFrame {
 
     private void listButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_listButtonActionPerformed
         PluginList.setSettings(settingsDialog);
-        if (plugins.isEmpty()) {
-            //plugins.loadFromRepository();
-            plugins.loadFromWeb();
-            JOptionPane.showMessageDialog(this, "Now only list of available plugins was downloaded.\n" +
-                    "To know which plugins are really translated, you must download all language files and compare them by content.\n" +
-                    "Continue by click on 'Download Files' button.");
-        } else {
-            //plugins.loadFromRepository();
-            plugins.loadFromWeb();
-            //JOptionPane.showMessageDialog(null, "Before comparison.");
-            int i = 0;
-            for (Plugin p: plugins) {
-                //auto-correct folders from previous versions
-                File oldFolder = new File(LangFile.getDownloadDirName(p.getName()));
-                File newFolder = new File(p.getFolder());
-                //System.out.println(oldFolder.getAbsolutePath() + " should be renamed to " + newFolder.getAbsolutePath());
-                if (!newFolder.exists() && oldFolder.exists()) {
-                    try {
-                        newFolder.mkdirs();
-                        Files.move(oldFolder.toPath(), newFolder.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                        //System.out.println("good");
-                    } catch (IOException ex) {
-                        //System.out.println("error");
-                        Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    //boolean result = oldFolder.renameTo(newFolder);
-                }
-                
-                // compare files, if they exist
-                File enFile = LangFile.getFile(p.getFolder(),p.getName(),"en");
-                if (enFile.exists()) {
-                    p.compareFiles();
-                }
-                i++;
-                //JOptionPane.showMessageDialog(null, "plugin " + p.getName());
+        final boolean emptyPlugins = plugins.isEmpty();
+        //plugins.loadFromRepository();
+        worker = new SwingWorker<Void, Void>() {
+            @Override
+            public Void doInBackground() {
+                plugins.loadFromWeb();                
+                return null;
             }
-            //JOptionPane.showMessageDialog(null, "After comparison. " + i);
-        }
+            
+            @Override
+            public void done() {
+                if (emptyPlugins) {
+                    JOptionPane.showMessageDialog(null, "Now only list of available plugins was downloaded.\n" +
+                            "To know which plugins are really translated, you must download all language files and compare them by content.\n" +
+                            "Continue by click on 'Download Files' button.");
+                } else {
+                    //JOptionPane.showMessageDialog(null, "Before comparison.");
+                    int i = 0;
+                    for (Plugin p: plugins) {
+                        //auto-correct folders from previous versions
+                        File oldFolder = new File(LangFile.getDownloadDirName(p.getName()));
+                        File newFolder = new File(p.getFolder());
+                        //System.out.println(oldFolder.getAbsolutePath() + " should be renamed to " + newFolder.getAbsolutePath());
+                        if (oldFolder.exists() && !newFolder.equals(oldFolder)) {
+                            try {
+                                newFolder.mkdirs();
+                                Files.move(oldFolder.toPath(), newFolder.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                                //System.out.println("good");
+                            } catch (IOException ex) {
+                                //System.out.println("error");
+                                Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                            //boolean result = oldFolder.renameTo(newFolder);
+                        }
+
+                        // compare files, if they exist
+                        File enFile = LangFile.getFile(p.getFolder(),p.getName(),"en");
+                        if (enFile.exists()) {
+                            p.compareFiles();
+                        }
+                        i++;
+                        //JOptionPane.showMessageDialog(null, "plugin " + p.getName());
+                    }
+                    //JOptionPane.showMessageDialog(null, "After comparison. " + i);
+                }                
+            }
+            
+        };
+        worker.execute();
 }//GEN-LAST:event_listButtonActionPerformed
 
     private void downloadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
@@ -936,19 +925,21 @@ public class MainFrame extends javax.swing.JFrame {
                 if (evt.getPropertyName().equals("pluginDowloaded")) {
                     int progress = ((Integer) evt.getNewValue()).intValue();
                     downloadProgressBar.setValue(progress);
-                    downloadstatusLabel.setText(MessageFormat.format("{0} plugins from {1} downloaded", progress, plugins.size()));
+                    downloadProgressBar.setString(MessageFormat.format("{0} plugins from {1} downloaded", progress, plugins.size()));
                     //pluginTable.getRowSorter().modelStructureChanged();
                 } else if (evt.getPropertyName().equals("dowloadFinished")) {
-                    downloadDialog.setVisible(false);
+                    downloadProgressBar.setVisible(false);
+                    downloadCancelButton.setVisible(false);
                     pluginTable.getRowSorter().modelStructureChanged();
                 } else if (evt.getPropertyName().equals("pluginDowloadStarted")) {
-                    downloadstatusLabel.setText(downloadstatusLabel.getText()+" (now downloading "+evt.getNewValue()+")");
+                    downloadProgressBar.setString(downloadProgressBar.getString()+" (now downloading "+evt.getNewValue()+")");
                 }
             }
 
         });
         new Thread(pluginDownloader).start();
-        downloadDialog.setVisible(true);
+        downloadCancelButton.setVisible(true);
+        downloadProgressBar.setVisible(true);
         downloadProgressBar.setMinimum(0);
         downloadProgressBar.setMaximum(plugins.size());
 
@@ -993,7 +984,6 @@ public class MainFrame extends javax.swing.JFrame {
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         plugins.saveToLocalDb();
         settingsDialog.storeMainWindowSizeAndPosition(this);
-        settingsDialog.storeDownloadDialogSizeAndPosition(downloadDialog);
         settingsDialog.saveSettingsToFile();
     }//GEN-LAST:event_formWindowClosing
 
@@ -1149,13 +1139,6 @@ public class MainFrame extends javax.swing.JFrame {
         pluginDownloader.stop();
     }//GEN-LAST:event_downloadCancelButtonActionPerformed
 
-    private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
-        //System.out.println("Window activated!");
-        if (downloadDialog.isVisible()) {
-            downloadDialog.setVisible(true);
-        }
-    }//GEN-LAST:event_formWindowActivated
-
     private boolean updateApplication() throws MalformedURLException, IOException {
         return ajglTools.updater(new URL(settingsDialog.getUpdateURL()+"/version.txt"),
                               version,
@@ -1266,10 +1249,8 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem compareMenuItem;
     private javax.swing.JButton downloadButton;
     private javax.swing.JButton downloadCancelButton;
-    private javax.swing.JDialog downloadDialog;
     private javax.swing.JMenuItem downloadMenuItem;
     private javax.swing.JProgressBar downloadProgressBar;
-    private javax.swing.JLabel downloadstatusLabel;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenuItem exportMenuItem;
     private javax.swing.JButton helpCloseButton;
@@ -1310,6 +1291,7 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
     private javax.swing.JSeparator jSeparator5;
+    private javax.swing.JSeparator jSeparator6;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextArea jTextArea2;
     private javax.swing.JButton licenseCloseButton;

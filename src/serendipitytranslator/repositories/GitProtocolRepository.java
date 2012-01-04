@@ -13,17 +13,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.InitCommand;
 import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.errors.*;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.FileMode;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.TreeWalk;
+import serendipitytranslator.mainWindow.Plugin;
+import serendipitytranslator.mainWindow.PluginList;
+import serendipitytranslator.mainWindow.PluginType;
 import serendipitytranslator.mainWindow.SerendipityFileInfo;
 
 /**
@@ -33,6 +34,8 @@ import serendipitytranslator.mainWindow.SerendipityFileInfo;
 public class GitProtocolRepository extends AbstractUpdatableRepository {
 
     private boolean repoUpdated = false;
+    private String remoteUrl;
+    private boolean updateFinished = false;
     
     protected HashMap<String, ArrayList<SerendipityFileInfo>> filelists = new HashMap<String, ArrayList<SerendipityFileInfo>>();
 
@@ -43,36 +46,30 @@ public class GitProtocolRepository extends AbstractUpdatableRepository {
 
     @Override
     public void setRemoteURL(String remoteURL) {
-        
+        this.remoteUrl = remoteURL;
     }
 
     @Override
     public String getRemoteURL() {
-        return "";
+        return remoteUrl;
     }
 
     @Override
     public void updateFileList(String folderPath) {
         try {
+            //System.out.println("updating filelist for "+folderPath);
             ArrayList<SerendipityFileInfo> filelist = new ArrayList<SerendipityFileInfo>();
             
+            File gitFolder = new File(getRepositoryFolderName() + "/.git");
+
+            updateRepository();
+            
             FileRepositoryBuilder builder = new FileRepositoryBuilder();
-            Repository repository = builder.setGitDir(new File(getRepositoryFolderName()+"/.git"))
+            Repository repository = builder.setGitDir(gitFolder)
                                             .readEnvironment() // scan environment GIT_* variables
                                             .findGitDir() // scan up the file system tree
                                             .build();
 
-            // update repository if not updated yet
-            if (!repoUpdated) {
-                Git git = new Git(repository);
-                PullCommand pull = git.pull();
-                pull.setTimeout(10);
-                PullResult pr = pull.call();
-                System.out.println(pr.getFetchedFrom());
-                System.out.println(pr.toString());
-                repoUpdated = true;
-            }
-            
             ObjectId headId = repository.resolve(Constants.HEAD);
             RevWalk walk = new RevWalk(repository);
             walk.markStart(walk.parseCommit(headId));
@@ -94,22 +91,26 @@ public class GitProtocolRepository extends AbstractUpdatableRepository {
             if (i<size) {
                 size = i;
             }
+            tree.setPostOrderTraversal(true);
             //System.out.println("Number of trees (commits): "+tree.getTreeCount());
 
             // find the folder
             Pattern p = Pattern.compile("/");
-            for(String folder: p.split(folderPath)) {
-                while (tree.next() && !tree.getNameString().equals(folder)) {
-                    //System.out.println("folder = "+folder+"; treeitem = "+tree.getPathString());                    
-                }
-                if (tree.getNameString().equals(folder)) {
-                    tree.enterSubtree();
+            String[] splittedPath = p.split(folderPath);
+            if (splittedPath.length >0 && splittedPath[0].length()>0) {
+                for(String folder: p.split(folderPath)) {
+                    while (tree.next() && !tree.getNameString().equals(folder)) {
+                        //System.out.println("folder = "+folder+"; treeitem = "+tree.getPathString());                    
+                    }
+                    if (tree.getNameString().equals(folder)) {
+                        tree.enterSubtree();
+                    }
                 }
             }
             
             // go through required tree and find dates of last commit for each file
-            tree.setPostOrderTraversal(true);
             while (tree.next() && !tree.isPostChildren()) {
+                //System.out.println("tree "+tree.getPathString()+"; postchildren = "+tree.isPostChildren());
                 firstMissing = 0;
                 missing = false;
                 for (i = 1; i < size ; i++) {
@@ -171,5 +172,180 @@ public class GitProtocolRepository extends AbstractUpdatableRepository {
         return (filelist != null) ? filelist : new ArrayList<SerendipityFileInfo>();
     }
     
+    private void deleteRecursive(File folder) {
+        if (folder.exists()) {
+            for(File f:folder.listFiles()) {
+                if (f.isDirectory()) {
+                    deleteRecursive(f);
+                } else {
+                    f.delete();
+                }
+            }
+            folder.delete();
+        }
+    }
+
+    private void updateRepository() throws IOException, WrongRepositoryStateException, InvalidConfigurationException, DetachedHeadException, InvalidRemoteException, CanceledException, RefNotFoundException {
+            File workingFolder = new File(getRepositoryFolderName());
+            File gitFolder = new File(getRepositoryFolderName() + "/.git");
+            if (!gitFolder.exists()) {
+                if (!workingFolder.exists()) {
+                    workingFolder.mkdirs();
+                }
+                int filesCount = workingFolder.list().length;
+                System.out.println("dir "+workingFolder.getName()+" has "+filesCount+" files");
+                if (!workingFolder.exists()) {
+                    workingFolder.mkdirs();
+                } else if (filesCount > 0) {
+                    for (File f: workingFolder.listFiles()) {
+                        if (f.isDirectory()) {
+                            deleteRecursive(f);
+                        } else {
+                            f.delete();
+                        }
+                    }
+                }
+                InitCommand initCommand = Git.init();
+                initCommand.setDirectory(workingFolder);
+                Git git = initCommand.call();
+
+                StoredConfig config = git.getRepository().getConfig();
+                config.setString("remote", "origin", "url", getRemoteURL());
+                config.setString("remote", "origin", "fetch", "+refs/heads/*:refs/remotes/origin/*");
+                config.setString("branch", "master", "remote", "origin");
+                config.setString("branch", "master", "merge", "refs/heads/master");
+                config.save();
+            }
+            
+            FileRepositoryBuilder builder = new FileRepositoryBuilder();
+            Repository repository = builder.setGitDir(gitFolder)
+                                            .readEnvironment() // scan environment GIT_* variables
+                                            .findGitDir() // scan up the file system tree
+                                            .build();
+
+            // update repository if not updated yet
+            if (!repoUpdated) {
+                updateFinished = false;
+                Git git = new Git(repository);
+                final PullCommand pull = git.pull();
+                //pull.setTimeout(10);
+                JGitProgressMonitor monitor = new JGitProgressMonitor();
+                monitor.start();
+                pull.setProgressMonitor(monitor);
+                (new Thread() {
+                    @Override
+                    public void run () {
+                    try {
+                        PullResult pr = pull.call();                        
+                        System.out.println(pr.getFetchedFrom());
+                        System.out.println(pr.toString());
+                        updateFinished = true;
+                    } catch (WrongRepositoryStateException ex) {
+                        Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (InvalidConfigurationException ex) {
+                        Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (DetachedHeadException ex) {
+                        Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (InvalidRemoteException ex) {
+                        Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (CanceledException ex) {
+                        Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (RefNotFoundException ex) {
+                        Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    }
+                }).start();
+                while (!updateFinished) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                
+                monitor.stopMonitor();
+                repoUpdated = true;
+            }
+    }
+
+    @Override
+    public void loadListOfPlugins(PluginList plugins, String folderPath, String language, boolean isIntern) {
+        try {
+            System.out.println("loading list of plugins: " + getRepositoryFolderName()+" - "+folderPath);
+            updateRepository();
+            File gitFolder = new File(getRepositoryFolderName() + "/.git");
+            FileRepositoryBuilder builder = new FileRepositoryBuilder();
+            Repository repository = builder.setGitDir(gitFolder)
+                                            .readEnvironment() // scan environment GIT_* variables
+                                            .findGitDir() // scan up the file system tree
+                                            .build();
+
+            ObjectId headId = repository.resolve(Constants.HEAD);
+            RevWalk walk = new RevWalk(repository);
+            //walk.markStart(walk.parseCommit(headId));
+            TreeWalk tree = new TreeWalk(repository);
+//            Iterator<RevCommit> it = walk.iterator();
+//            while (it.hasNext()) {
+//                RevCommit rc = it.next();
+//                //System.out.println(rc.getShortMessage());
+//                tree.addTree(rc.getTree());                
+//            }
+            tree.addTree(walk.parseTree(headId));
+            tree.setPostOrderTraversal(true);
+            tree.next();
+            //System.out.println("tree "+tree.getPathString()+";name="+tree.getNameString()+"; depth="+ tree.getDepth() + "; subtree="+tree.isSubtree());
+            
+            Pattern pat = Pattern.compile("/");
+            String[] splittedPath = pat.split(folderPath);
+            //System.out.println("splittedPath - length="+splittedPath.length+";contents="+Arrays.toString(splittedPath));
+            if (splittedPath.length >0 && splittedPath[0].length()>0) {
+                for(String folder: splittedPath) {
+                    while (tree.next() && !tree.getNameString().equals(folder)) {
+                        //System.out.println("folder = "+folder+"; treeitem = "+tree.getPathString());                    
+                    }
+                    if (tree.getNameString().equals(folder)) {
+                        tree.enterSubtree();
+                    }
+                }
+            }
+            //System.out.println("tree "+tree.getPathString()+";name="+tree.getNameString()+"; depth="+ tree.getDepth() + "; subtree="+tree.isSubtree());
+            
+            while (tree.next() && !tree.isPostChildren()) {
+                //System.out.println(tree.getNameString() + "; subtree = "+tree.isSubtree());
+                if (tree.isSubtree()) {
+                    Plugin p = new Plugin(tree.getNameString(), language);
+                    if (folderPath.contains("plugins")) {
+                        if (p.getType().equals(PluginType.template)) {
+                            p.setType(PluginType.event);
+                        }
+                    } else {
+                        p.setType(PluginType.template);
+                    }
+                    p.setRepository(this);
+                    if (folderPath.length()>0) {
+                        p.setFolderInRepository(folderPath + "/" + tree.getNameString());
+                    } else {
+                        p.setFolderInRepository(tree.getNameString());
+                    }
+                    
+                    plugins.add(p);
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (WrongRepositoryStateException ex) {
+            Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidConfigurationException ex) {
+            Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (DetachedHeadException ex) {
+            Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidRemoteException ex) {
+            Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (CanceledException ex) {
+            Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (RefNotFoundException ex) {
+            Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
     
 }

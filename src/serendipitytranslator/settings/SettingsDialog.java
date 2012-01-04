@@ -32,8 +32,6 @@ public class SettingsDialog extends javax.swing.JDialog {
 
     Point mainWindowPosition = new Point(0,0);
     Dimension mainWindowSize = new Dimension(473,326);
-    Point downloadDialogPosition = new Point(0,326);
-    Dimension downloadDialogSize = new Dimension(451,79);
     PropertyChangeSupport propertyChange;
 
 
@@ -131,7 +129,7 @@ public class SettingsDialog extends javax.swing.JDialog {
         jLabel4.setText("Repository type:");
 
         externPluginsComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "svn", "cvs", "git html", "git native", "folder" }));
-        externPluginsComboBox.setSelectedIndex(1);
+        externPluginsComboBox.setSelectedIndex(3);
 
         jLabel5.setText("URL with plugins:");
 
@@ -190,7 +188,7 @@ public class SettingsDialog extends javax.swing.JDialog {
         jLabel6.setText("Repository type:");
 
         coreTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "svn", "cvs", "git html", "git native", "folder" }));
-        coreTypeComboBox.setSelectedIndex(2);
+        coreTypeComboBox.setSelectedIndex(3);
 
         jLabel7.setText("URL - S9y core root:");
 
@@ -249,7 +247,7 @@ public class SettingsDialog extends javax.swing.JDialog {
         jLabel8.setText("Repository type:");
 
         externThemesComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "svn", "cvs", "git html", "git native", "folder" }));
-        externThemesComboBox.setSelectedIndex(1);
+        externThemesComboBox.setSelectedIndex(3);
 
         jLabel10.setText("URL with themes:");
 
@@ -419,12 +417,12 @@ public class SettingsDialog extends javax.swing.JDialog {
 
     private void setDefaults() {
         updateURLTextField.setText("http://vlada.ajgl.cz/serendipity_translator");
-        coreTypeComboBox.setSelectedIndex(2);
-        coreUrlTextField.setText("https://github.com/s9y/Serendipity/tree/master");
-        externPluginsComboBox.setSelectedIndex(1);
-        externPluginsTextField.setText("http://php-blog.cvs.sourceforge.net/viewvc/php-blog/additional_plugins");
-        externThemesComboBox.setSelectedIndex(1);
-        externThemesTextField.setText("http://php-blog.cvs.sourceforge.net/viewvc/php-blog/additional_themes");
+        coreTypeComboBox.setSelectedIndex(3);
+        coreUrlTextField.setText("git://github.com/s9y/Serendipity.git");
+        externPluginsComboBox.setSelectedIndex(3);
+        externPluginsTextField.setText("git://github.com/s9y/additional_plugins.git");
+        externThemesComboBox.setSelectedIndex(3);
+        externThemesTextField.setText("git://github.com/s9y/additional_themes.git");
     }
     
     public String getLanguage() {
@@ -487,22 +485,6 @@ public class SettingsDialog extends javax.swing.JDialog {
                         mainWindowSize.height = Integer.parseInt(st.nextToken());
                         //this.setSize(this.getWidth(), Integer.parseInt(st.nextToken()));
                     }
-                    if (count==2 && key.equals("downloadWindowLeft")) {
-                        downloadDialogPosition.x = Integer.parseInt(st.nextToken());
-                        //downloadDialog.setLocation(Integer.parseInt(st.nextToken()), downloadDialog.getY());
-                    }
-                    if (count==2 && key.equals("downloadWindowTop")) {
-                        downloadDialogPosition.y = Integer.parseInt(st.nextToken());
-                        //downloadDialog.setLocation(downloadDialog.getX(), Integer.parseInt(st.nextToken()));
-                    }
-                    if (count==2 && key.equals("downloadWindowWidth")) {
-                        downloadDialogSize.width = Integer.parseInt(st.nextToken());
-                        //downloadDialog.setSize(Integer.parseInt(st.nextToken()), downloadDialog.getHeight());
-                    }
-                    if (count==2 && key.equals("downloadWindowHeight")) {
-                        downloadDialogSize.height = Integer.parseInt(st.nextToken());
-                        //downloadDialog.setSize(downloadDialog.getWidth(), Integer.parseInt(st.nextToken()));
-                    }
                     if (count==2 && key.equals("coreType")) {
                         coreTypeComboBox.setSelectedItem(st.nextToken());
                     }
@@ -553,10 +535,6 @@ public class SettingsDialog extends javax.swing.JDialog {
             fw.write("pluginWindowTop="+mainWindowPosition.y+"\r\n");
             fw.write("pluginWindowWidth="+mainWindowSize.width+"\r\n");
             fw.write("pluginWindowHeight="+mainWindowSize.height+"\r\n");
-            fw.write("downloadWindowLeft="+downloadDialogPosition.x+"\r\n");
-            fw.write("downloadWindowTop="+downloadDialogPosition.y+"\r\n");
-            fw.write("downloadWindowWidth="+downloadDialogSize.width+"\r\n");
-            fw.write("downloadWindowHeight="+downloadDialogSize.height+"\r\n");
             fw.write("coreType="+getCoreType()+"\r\n");
             fw.write("coreUrl="+getCoreUrl()+"\r\n");
             fw.write("coreFolder="+getCoreLocalFolder()+"\r\n");
@@ -580,16 +558,6 @@ public class SettingsDialog extends javax.swing.JDialog {
     public void storeMainWindowSizeAndPosition(MainFrame mainWindow) {
         mainWindowSize = mainWindow.getSize();
         mainWindowPosition = mainWindow.getLocation();
-    }
-
-    public void setDownloadDialogSizeAndPosition(JDialog downloadDialog) {
-        downloadDialog.setSize(downloadDialogSize);
-        downloadDialog.setLocation(downloadDialogPosition);
-    }
-
-    public void storeDownloadDialogSizeAndPosition(JDialog downloadDialog) {
-        downloadDialogSize = downloadDialog.getSize();
-        downloadDialogPosition = downloadDialog.getLocation();
     }
 
     public String getCoreType() {
@@ -648,8 +616,8 @@ public class SettingsDialog extends javax.swing.JDialog {
         SimpleFileRepository repository = selectRepository(coreTypeComboBox.getSelectedItem().toString());
         repository.setRepositoryFolderName(getCoreLocalFolder());
         repository.setHasInternalPlugins(true);
-        if (repository instanceof AbstractHTMLRepository) {
-            ((AbstractHTMLRepository) repository).setRemoteURL(getCoreUrl());                    
+        if (repository instanceof AbstractUpdatableRepository) {
+            ((AbstractUpdatableRepository) repository).setRemoteURL(getCoreUrl());                    
         }
         return repository;
     }
@@ -658,8 +626,8 @@ public class SettingsDialog extends javax.swing.JDialog {
         SimpleFileRepository repository = selectRepository(externPluginsComboBox.getSelectedItem().toString());
         repository.setRepositoryFolderName(getExternPluginsLocalFolder());
         repository.setHasInternalPlugins(false);
-        if (repository instanceof AbstractHTMLRepository) {
-            ((AbstractHTMLRepository) repository).setRemoteURL(getExternPluginsUrl());                    
+        if (repository instanceof AbstractUpdatableRepository) {
+            ((AbstractUpdatableRepository) repository).setRemoteURL(getExternPluginsUrl());                    
         }
         return repository;
     }
@@ -668,8 +636,8 @@ public class SettingsDialog extends javax.swing.JDialog {
         SimpleFileRepository repository = selectRepository(externThemesComboBox.getSelectedItem().toString());
         repository.setRepositoryFolderName(getExternThemesLocalFolder());
         repository.setHasInternalPlugins(false);
-        if (repository instanceof AbstractHTMLRepository) {
-            ((AbstractHTMLRepository) repository).setRemoteURL(getExternThemesUrl());                    
+        if (repository instanceof AbstractUpdatableRepository) {
+            ((AbstractUpdatableRepository) repository).setRemoteURL(getExternThemesUrl());                    
         }
         return repository;
     }

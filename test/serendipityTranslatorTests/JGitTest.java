@@ -4,12 +4,20 @@
  */
 package serendipityTranslatorTests;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.InitCommand;
+import org.eclipse.jgit.api.PullCommand;
+import org.eclipse.jgit.api.PullResult;
+import org.eclipse.jgit.api.errors.*;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.StoredConfig;
+import org.eclipse.jgit.lib.TextProgressMonitor;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.junit.*;
-import serendipitytranslator.mainWindow.SerendipityFileInfo;
-import serendipitytranslator.repositories.GitProtocolRepository;
 
 /**
  *
@@ -180,7 +188,6 @@ public class JGitTest {
         }
         
     }
-    */
     
     @Test
     public void jGitTest5() {
@@ -196,6 +203,85 @@ public class JGitTest {
         for (SerendipityFileInfo info: filelist) {
             d = new Date(info.getFileDate());
             System.out.println(info.getFilename() + ": " + date.format(d));
+        }
+    }
+    */
+
+    @Test
+    public void jGitTest6() {
+        try {
+            String repoFolderName = "C:/Cvs/php-blog/pluginsTryout";
+            String remoteString = "git://github.com/s9y/Serendipity.git";
+            File workingFolder = new File(repoFolderName);
+            File gitFolder = new File(repoFolderName + "/.git");
+            deleteRecursive(workingFolder);
+            if (!gitFolder.exists()) {
+                if (!workingFolder.exists()) {
+                    workingFolder.mkdirs();
+                }
+                InitCommand initCommand = Git.init();
+                initCommand.setDirectory(workingFolder);
+                Git git = initCommand.call();
+
+                StoredConfig config = git.getRepository().getConfig();
+                config.setString("remote", "origin", "url", remoteString);
+                config.setString("remote", "origin", "fetch", "+refs/heads/*:refs/remotes/origin/*");
+                config.setString("branch", "master", "remote", "origin");
+                config.setString("branch", "master", "merge", "refs/heads/master");
+                config.save();
+                
+                for (String remoteName : config.getSubsections("remote")) {
+                    for (String name: config.getNames("remote", remoteName)) {
+                        String value = config.getString("remote", remoteName, name);
+                        System.out.println(remoteName + ": " + name + " = " + value);
+                    }
+                }
+                PullCommand pull = git.pull();
+                TextProgressMonitor monitor = new TextProgressMonitor();
+                monitor.start(100);
+                pull.setProgressMonitor(monitor);
+                PullResult pr = pull.call();
+                System.out.println(pr.getFetchedFrom());
+                System.out.println(pr.toString());
+            }
+            
+            FileRepositoryBuilder builder = new FileRepositoryBuilder();
+            Repository repository = builder.setGitDir(gitFolder)
+                                            .readEnvironment() // scan environment GIT_* variables
+                                            .findGitDir() // scan up the file system tree
+                                            .build();
+            System.out.println(repository.getFullBranch());
+            repository.close();
+        } catch (WrongRepositoryStateException ex) {
+            Logger.getLogger(JGitTest.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidConfigurationException ex) {
+            Logger.getLogger(JGitTest.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (DetachedHeadException ex) {
+            Logger.getLogger(JGitTest.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (CanceledException ex) {
+            Logger.getLogger(JGitTest.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (RefNotFoundException ex) {
+            Logger.getLogger(JGitTest.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidRemoteException ex) {
+            Logger.getLogger(JGitTest.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (JGitInternalException ex) {
+            System.out.println(ex.getCause().getMessage());
+            Logger.getLogger(JGitTest.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(JGitTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private void deleteRecursive(File folder) {
+        if (folder.exists()) {
+            for(File f:folder.listFiles()) {
+                if (f.isDirectory()) {
+                    deleteRecursive(f);
+                } else {
+                    f.delete();
+                }
+            }
+            folder.delete();
         }
     }
 }
