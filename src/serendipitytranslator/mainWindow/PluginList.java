@@ -26,7 +26,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import serendipitytranslator.repositories.*;
+import serendipitytranslator.repositories.AbstractHTMLRepository;
+import serendipitytranslator.repositories.SimpleFileRepository;
 import serendipitytranslator.settings.SettingsDialog;
 
 /**
@@ -63,6 +64,7 @@ public class PluginList extends ArrayList<Plugin> {
         }
         
         if (!downloadsRequired || internetAvailable) {
+            propertyChange.firePropertyChange("workStarted", null, "Download of list of plugins started.");
             //System.out.println("Connection works, now the download begins.");
             clear();
 
@@ -79,6 +81,7 @@ public class PluginList extends ArrayList<Plugin> {
                 coreRepAvailable = false;
             }
             if (coreRepAvailable) {
+                coreRepository.setPropertyChange(propertyChange);
                 coreRepository.loadListOfPlugins(this, "plugins", language, true);
                 coreRepository.loadListOfPlugins(this, "templates", language, true);
             } else {
@@ -92,6 +95,7 @@ public class PluginList extends ArrayList<Plugin> {
                 pluginRepAvailable = false;
             }
             if (pluginRepAvailable) {
+                pluginsRepository.setPropertyChange(propertyChange);
                 pluginsRepository.loadListOfPlugins(this, "", language, false);
             } else {
                 JOptionPane.showMessageDialog(null, "Server with external plugins ("+settings.getExternPluginsUrl()+") is not accessible."+'\r'+'\n'+"External plugins cannot be updated.", "Plugins server error", JOptionPane.WARNING_MESSAGE);
@@ -107,13 +111,14 @@ public class PluginList extends ArrayList<Plugin> {
                 }
             }
             if (themesRepAvailable) {
+                themesRepository.setPropertyChange(propertyChange);
                 themesRepository.loadListOfPlugins(this, "", language, false);
             } else {
                 JOptionPane.showMessageDialog(null, "Server with external themes ("+settings.getExternThemesUrl()+") is not accessible."+'\r'+'\n'+"External themes cannot be updated.", "Themes server error", JOptionPane.WARNING_MESSAGE);
             }
 
             System.out.println("Plugin list updated. Now there are " + size() + " plugins/templates in the list.");
-            propertyChange.firePropertyChange("list_downloaded", null, this);
+            propertyChange.firePropertyChange("workFinished", null, this);
             //JOptionPane.showMessageDialog(null, "Plugin list downloaded","Plugin list downloaded",JOptionPane.INFORMATION_MESSAGE);
         }
     }

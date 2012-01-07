@@ -25,7 +25,7 @@ Zdrojovı kód - <a href="http://vlada.ajgl.cz/serendipity_translator/SerendipityT
 
 <h2>Návod k pouití</h2>
 <h3>Nastavení (klávesová zkratka "S")</h3>
-<!-- s9ymdb:1490 --><img width="498" height="533" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="/uploads/settings_dialog.png" alt="" />
+<!-- s9ymdb:1490 --><img width="484" height="524" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="/uploads/settings_dialog.png" alt="" />
 
 <p>
 Po spuštìní je tøeba program nastavit. Kliknutím na menu "Settings" (nebo klávesová zkratka "s"). Zadejte <b>jazyk</b>, do kterého chcete pøekládat z pøedvybraného seznamu. A také <b>jméno pøekladatele a jeho emailovou adresu</b>. Na tu se nic nebude posílat, jde pouze o øádku, která bude uloena v pøeloenıch souborech, aby pøípadní další pøekladatelé vìdìli, kdo pøed nimi soubor pøekládal.
@@ -39,19 +39,43 @@ Po spuštìní je tøeba program nastavit. Kliknutím na menu "Settings" (nebo kláves
 <p>
     <b>Serendipity core</b>, <b>Additional plugins</b>, <b>Additional themes</b> - Zde mùete zadat, pomocí jaké metody (<b>Repository type</b>), z jakého umístìní na internetu (<b>URL</b>) se mají aktualizovat jazykové soubory a kam na lokální disk se mají ukládat (<b>Local folder</b>). Vıchozí nastavení není tøeba mìnit, funguje. Pokud se vám zdá stahování pomalé, mùete zkusit toto nastavení zmìnit. Pøeètìte si pøedtím ale <a href="#protocols">odstavec o pøístupovıch protokolech</a>.
 </p>
+<p>
+    Tlaèítko <b>Reset to default settings</b> nastaví vıchozí hodnoty pro typ a URL internetového úloištì pro všechny tøi souèásti Serendipity.
+</p>
 
 <h3>Hlavní okno</h3>
 <h4>Tlaèítko "Update plugin list" (klávesová zkratka "U")</h4>
-Po klinutí se program pøipojí k webovému úloišti s pluginy (Spartacus), stáhne jejich seznam a z informací o pluginech zjistí, kterı plugin obsahuje èi neobsahuje pøeklad v nastaveném jazyce. V tomto okamiku program nezná obsah pøeloenıch souborù, ty je tøeba stáhnout kliknutím na následující tlaèítko. Program v tuto chvíli pouze ví, e soubor s pøekladem existuje, ale neví, co obsahuje.
+<p>
+    Po klinutí se program pøipojí k webovému úloišti s pluginy (Spartacus), stáhne jejich seznam a z informací o pluginech zjistí, kterı plugin obsahuje èi neobsahuje pøeklad v nastaveném jazyce. V tomto okamiku program nezná obsah pøeloenıch souborù, ty je tøeba stáhnout kliknutím na následující tlaèítko. Program v tuto chvíli pouze ví, e soubor s pøekladem existuje, ale neví, co obsahuje.
+</p>
+<p>
+    Ve verzi 2.1 byla pøidána plná podpora protokolu git. Pøi jeho pouití je tøeba aktualizovat celé úloištì pøed tím, ne je moné získat seznam pluginù. To znamená, e pro protokol "git native" dìlají tlaèítka "Update plugin list" a "Download files" úplnì to samé. Postup stahování je zobrazen ve <a href="#status_bar">stavovém øádku</a>.
+</p>
 
 <h4>Tlaèítko "Download files" (klávesová zkratka "D")</h4>
-Program stáhne soubory pøekladù - jednak anglické a pak ve vybraném lokálním jazyku (viz. nastavení) a porovná je z hlediska obsahu. Vısledky porovnání viz. odstvec "Tabulka s pluginy". Stahování mùe bıt zdlouhavé, proto o prùbìhu stahování uivatele informuje ukazatel vıvoje stahování.
-<!-- s9ymdb:1491 --><img width="540" height="90" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="/uploads/download_progress.png" alt="" />
+Program stáhne soubory pøekladù - jednak anglické a pak ve vybraném lokálním jazyku (viz. nastavení) a porovná je z hlediska obsahu. Vısledky porovnání viz. odstvec "Tabulka s pluginy". Stahování mùe bıt zdlouhavé, proto o prùbìhu stahování uivatele informuje ukazatel vıvoje stahování ve <a href="#status_bar">stavovém øádku</a>.
+
 <p>Od verze 1.6 program stahuje pouze od minula zmìnìné soubory, take je stahování trochu rychlejsí. Stahování je navíc mono pøerušit stisknutím tlaèítka "Cancel". Od zmínìné verze jsou stahovány také soubory dokumentace (documentation_xx.html, readme, ChangeLog). O sledování pøekladù dokumentace více viz sekce <a href="#documentation">Pøeklad dokumentace</a>.
 </p>
 
 <h4>Tlaèítko "Compare files by content" (klávesová zkratka "C")</h4>
+<p>
 Pokud z nìjakého dùvodu nejsou soubory porovnány a tabulka s pluginy ukazuje nìco jiného ne souèasnı stav (napø. po ruèním pøekladu <a href="#documentation">souborù dokumentace</a>), lze program pøinutit k opìtovnému prohledání jazykovıch souborù (které jsou uloeny na disku, nic se nestahuje) a jejich porovnání.
+</p>
+<p>
+    Jak byly postupem èasu pøidávány funkce do porovnání souborù pluginù, tak se operace porovnání ponìkud natáhla, take mùe trvat i docela dlouho. Proto je vıvoj porovnávání zobrazen ve <a href="#status_bar">stavovém øádku</a>.
+</p>
+
+<a name="status_bar"></a><h4>Stavovı øádek</h4>
+<p>
+<!-- s9ymdb:1491 --><img width="526" height="43" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="/uploads/status_bar.png" alt="" />
+</p>
+<p>
+    Prùbìh všech potenciálnì zdlouhavıch operací je zobrazován ve stavovém øádku na spodním kraji hlavního okna. Pokud se vám nechce èekat na vısledek operace, mùete ji zastavit stiskem tlaèítka <b>Cancel</b>.
+</p>
+<p>
+    Pokud ádná operace neprobíhá, je stavovı øádek skrytı.
+</p>
 
 <h4>Tabulka s pluginy</h4>
 <ul>
@@ -144,14 +168,12 @@ Soubory jsou do kódování utf-8 pøevedeny po kliknutí na export, tj. <a href="#ex
 <p>
     POZOR! URL adresa internetového úloištì je logicky pevnì svázána s typem úloištì - napø. github.com poskytuje html rozhraní pro git, sourceforge.net html rozhraní pro cvs. Serendipity Translator tuto závislost nijak nehlídá, take pokud to nastavíte špatnì (napøíklad zadáte adresu github.com a k tomu vyberete cvs úloištì), tak vám to nebude fungovat.
 </p>
-<p>
-    POZOR! Vıchozí nastavení pro jádro (Serendipity Core) není úplnì ideální. V listopadu 2011 došlo k pøesunu jádra serendipity ze serveru berlios.de, kterı ukonèil èinnost, na github.com. Bohuel html rozhraní githubu, ze kterého Serendipity Translator získává informace o tom, které soubory má stahovat, se obtínìji parsuje, take je v souèasnosti pøednastavenı odkaz na ne úplnì poslední commit. Navíc datum poslední zmìny je pøístupné pouze pøes javascript, kterı Serendipity Translator takté neumí projít. V dùsledku toho se z githubu vdy stahují všechny soubory (vìtší provoz po síti a déle to trvá) a u dokumentace nefunguje indikace stavu, tj. jestli je nebo není pøeloená, protoe k tomu je potøeba znát datum poslední zmìny souboru. V souèasnosti dobøe funguje, pokud nastavíte "git native". Viz níe.
-</p>
 Typy protokolù:
 <ul>
-    <li><b>HTML protokoly - svn, cvs, git html</b> - U tìch je to jednoduché - ty se pøipojí k zadané www adrese, prohlédnou si její obsah, jako to mùete udìlat sami v internetovém prohlíeèi, vyzobají z nìj informace o pluginech a souborech a stáhnou ze serverù na lokální disk soubory zmìnìné od posledního stahování. S lokálními soubory pak dále pracují pøi pøekladech.</li>
+    <li><b>HTML protokoly - svn, cvs</b> - U tìch je to jednoduché - ty se pøipojí k zadané www adrese, prohlédnou si její obsah, jako to mùete udìlat sami v internetovém prohlíeèi, vyzobají z nìj informace o pluginech a souborech a stáhnou ze serverù na lokální disk soubory zmìnìné od posledního stahování. S lokálními soubory pak dále pracují pøi pøekladech.</li>
+    <li><b>git html (nedoporuèeno)</b> - Standardní html protokol, kterı se pøipojí k webovému rozhraní gitHubu a snaí se pøeèíst jeho html stránku. Bohuel html rozhraní githubu je postavené ponìkud nešastnì. Je toti prošpikované javascriptem, kterı je pro SerendipityTranslator neprùchodnı. Take napøíklad datum poslední zmìny lze získat jen ve speciálních pøípadìch. V dùsledku toho se z githubu vdy stahují všechny soubory (vìtší provoz po síti a déle to trvá) a u dokumentace nefunguje indikace stavu, tj. jestli je nebo není pøeloená, protoe k tomu je potøeba znát datum poslední zmìny souboru. Doporuèuji pouít vıchozí "git native" protokol. Viz níe.</li>
     <li><b>folder</b> - Ignoruje nastavení URL adresy pro vzdálenı poèítaè. Prostì jen ète soubory ze zadaného adresáøe na lokálním disku. Nic nestahuje, soubory je tøeba aktualizovat mimo SerendipityTranslator. Informace o poslední zmìnì souboru se bere z jeho data. Tedy nefunguje pøíliš dobøe varianta, e sami zaloíte cvs nebo git adresáø a ukáete na nìj v Serendipity Tranlsatoru pomocí protokolu "folder", protoe soubory aktualizované pomocí cvs nebo gitu nemají datum poslední zmìny shodné s datem posledního commitu, kdy byl soubor mìnìn.</li>
-    <li><b>git native</b> - vyuívá vymoenosti verzovacího protokolu git. V souèasnosti ignoruje zadanou URL adresu a neumí zaloit lokální git úloištì, ani ho neumí napojit na vzdálené úloištì napø. na githubu. To musíte udìlat sami, ruènì. Jakmile je úloištì zaloeno a v nastavení Serendipity Translatoru nastavíte lokální adresáø na adresáø s gitem, Serendipity Translator si u umí úloištì automaticky aktualizovat a vytahat z nìj potøebné informace jako datum poslední zmìny. Datum poslední zmìny se v tomto pøípadì nebere z data souboru, ale z data posledního commitu, kdy byl soubor zmìnìn.</li>    
+    <li><b>git native</b> - vyuívá vymoenosti verzovacího protokolu git. Od verze 2.1 umí zaloit lokální git úloištì a napojit ho na vzdálené úloištì napø. na githubu, zadané v nastavení "remote URL". Nastavení URL je pouito pouze pøi prvotním propojení lokálního úloištì se vzdálenım, pak je ignorováno. Pokud chcete aktualizovat lokální úloištì z jiného vzdáleného, musíte smazat celı adresáø s lokálním úloištìm a vytvoøit ho znovu za pouití jiné URL adresy. Datum poslední zmìny se nebere z data souboru, ale z data posledního commitu, kdy byl soubor zmìnìn.</li>    
 </ul>
 
 <h2>Jak program vnitønì funguje</h2>
@@ -253,9 +275,17 @@ Pøidána podpora Gitu.<br />
 Pøepracována funkce na aktualizaci softwaru - pro git se pouívá knihovna, take se program rozrostl na více souborù, které je tøeba stahovat v zip souboru a následnì rozbalit.
 </li>
 
+<li><b>2.1</b> - 7.1.2012<br />
+Pøidáno - nové tlaèítko, monost vrátit nastavení na vıchozí hodnoty<br />
+Zmìnìno - vıchozí hodnoty vzdálenıch úloiš, vše pøesmìrováno na github pøes protokol git<br />
+Vylepšeno - stahování pomocí git protokolu. Nyní je plnì pouitelné - umí si zaloit nové lokální úloištì, aktualizovat ho ze vzdáleného, umí i dávat prùbìné vısledky o stahování.<br />
+Zmìnìno - dialog s prùbìhem stahování byl zrušeno, pruh s prùbìhem byl integrován do hlavního okna a nyní zobrazuje i prùbìh dalších operací jako je získávání seznamu pluginù nebo porovnávání souborù v pluginech.<br />
+Vylepšeno - git html protokol. Nyní jsou u stahovány soubory z posledního commitu. Nicménì je doporuèeno pouívat vıchozí nastavení a pøistupovat ke githubu pøes nativní git protokol.<br />
+Zmìnìno - pouitá knihovna jgit byla aktualizována na nejnovìjší verzi.
+</li>
 </ul>
 
 <h2>Autor</h2>
-Vladimír Ajgl, 2009-2011 (c)
+Vladimír Ajgl, 2009-2012 (c)
   </body>
 </html>

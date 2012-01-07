@@ -32,10 +32,10 @@ public class PluginDownloader implements Runnable {
     public void run() {
         int count = 0;
         
-        propertyChange.firePropertyChange("dowloadStarted", null, "Download of plugins started.");
+        propertyChange.firePropertyChange("workStarted", null, "Download of plugins started.");
         if (ajglTools.checkInternetConnection()) {
                 for (Plugin plugin : pluginList) {
-                    if (stop) {
+                    if (stop || Thread.interrupted()) {
                         break;
                     }
                     propertyChange.firePropertyChange("pluginDowloadStarted", null, plugin.getName());
@@ -47,7 +47,7 @@ public class PluginDownloader implements Runnable {
         } else {
             JOptionPane.showMessageDialog(null, "You are not connected to internet, plugins can not be downloaded!","Internet connection failed",JOptionPane.WARNING_MESSAGE);
         }
-        propertyChange.firePropertyChange("dowloadFinished", null, pluginList);
+        propertyChange.firePropertyChange("workFinished", null, pluginList);
     }
 
     public void stop() {

@@ -252,6 +252,8 @@ public class JGitTest {
                                             .build();
             System.out.println(repository.getFullBranch());
             repository.close();
+        } catch (NoHeadException ex) {
+            Logger.getLogger(JGitTest.class.getName()).log(Level.SEVERE, null, ex);
         } catch (WrongRepositoryStateException ex) {
             Logger.getLogger(JGitTest.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InvalidConfigurationException ex) {

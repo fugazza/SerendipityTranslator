@@ -42,7 +42,7 @@ public class PluginTableModel extends AbstractTableModel {
     }
 
     public Object getValueAt(int row, int column) {
-        if (pluginList == null) {
+        if (pluginList == null || row >= pluginList.size()) {
             return null;
         } else {
             switch (column) {

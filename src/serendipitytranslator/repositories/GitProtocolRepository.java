@@ -35,7 +35,6 @@ public class GitProtocolRepository extends AbstractUpdatableRepository {
 
     private boolean repoUpdated = false;
     private String remoteUrl;
-    private boolean updateFinished = false;
     
     protected HashMap<String, ArrayList<SerendipityFileInfo>> filelists = new HashMap<String, ArrayList<SerendipityFileInfo>>();
 
@@ -225,46 +224,38 @@ public class GitProtocolRepository extends AbstractUpdatableRepository {
 
             // update repository if not updated yet
             if (!repoUpdated) {
-                updateFinished = false;
                 Git git = new Git(repository);
                 final PullCommand pull = git.pull();
                 //pull.setTimeout(10);
-                JGitProgressMonitor monitor = new JGitProgressMonitor();
-                monitor.start();
+                JGitProgressMonitor monitor = new JGitProgressMonitor(getRepositoryFolderName().substring(getRepositoryFolderName().lastIndexOf("/")+1));
+                monitor.setPropertyChange(propertyChange);
                 pull.setProgressMonitor(monitor);
-                (new Thread() {
-                    @Override
-                    public void run () {
-                    try {
-                        PullResult pr = pull.call();                        
-                        System.out.println(pr.getFetchedFrom());
-                        System.out.println(pr.toString());
-                        updateFinished = true;
-                    } catch (WrongRepositoryStateException ex) {
-                        Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (InvalidConfigurationException ex) {
-                        Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (DetachedHeadException ex) {
-                        Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (InvalidRemoteException ex) {
-                        Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (CanceledException ex) {
-                        Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (RefNotFoundException ex) {
-                        Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    }
-                }).start();
-                while (!updateFinished) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                try {
+                    PullResult pr = pull.call();                        
+//                    System.out.println("Pull ended. was successfull? - " +pr.isSuccessful());
+//                    System.out.println("pull result string = " + pr.toString());
+//                    System.out.println("fetched from = " + pr.getFetchedFrom());
+//                    System.out.println("fetch result = " + pr.getFetchResult());
+//                    System.out.println("merge result = " + pr.getMergeResult());
+//                    System.out.println("rebase result = " + pr.getRebaseResult());
+                } catch (NoHeadException ex) {
+                    Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (WrongRepositoryStateException ex) {
+                    Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (InvalidConfigurationException ex) {
+                    Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (DetachedHeadException ex) {
+                    Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (InvalidRemoteException ex) {
+                    Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (CanceledException ex) {
+                    Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (RefNotFoundException ex) {
+                    Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 
-                monitor.stopMonitor();
                 repoUpdated = true;
+                System.out.println("End of git updateRepository()");
             }
     }
 
@@ -273,6 +264,10 @@ public class GitProtocolRepository extends AbstractUpdatableRepository {
         try {
             System.out.println("loading list of plugins: " + getRepositoryFolderName()+" - "+folderPath);
             updateRepository();
+            String repoName = getRepositoryFolderName().substring(getRepositoryFolderName().lastIndexOf("/")+1);
+            propertyChange.firePropertyChange("progressMax", -1, 0);
+            propertyChange.firePropertyChange("progressValue", -1, 0);
+            propertyChange.firePropertyChange("progressText", "", repoName + " - reading list of plugins");
             File gitFolder = new File(getRepositoryFolderName() + "/.git");
             FileRepositoryBuilder builder = new FileRepositoryBuilder();
             Repository repository = builder.setGitDir(gitFolder)
@@ -309,7 +304,7 @@ public class GitProtocolRepository extends AbstractUpdatableRepository {
                 }
             }
             //System.out.println("tree "+tree.getPathString()+";name="+tree.getNameString()+"; depth="+ tree.getDepth() + "; subtree="+tree.isSubtree());
-            
+            int i = 0;
             while (tree.next() && !tree.isPostChildren()) {
                 //System.out.println(tree.getNameString() + "; subtree = "+tree.isSubtree());
                 if (tree.isSubtree()) {
@@ -329,6 +324,8 @@ public class GitProtocolRepository extends AbstractUpdatableRepository {
                     }
                     
                     plugins.add(p);
+                    i++;
+                    propertyChange.firePropertyChange("progressText", "", repoName + " - " + i + " plugins found.");
                 }
             }
         } catch (IOException ex) {
@@ -347,5 +344,5 @@ public class GitProtocolRepository extends AbstractUpdatableRepository {
             Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
 }

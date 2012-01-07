@@ -4,23 +4,27 @@
  */
 package serendipitytranslator.repositories;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.beans.PropertyChangeSupport;
 import org.eclipse.jgit.lib.ProgressMonitor;
 
 /**
  *
  * @author Vláďa
  */
-public class JGitProgressMonitor extends Thread implements org.eclipse.jgit.lib.ProgressMonitor {
-    int totalTasks = 0;
-    int totalWork = 0;
-    int completedTasks = -1;
-    int actualState = 0;
-    boolean stopped = false;
-    String textToDisplay = "";
+public class JGitProgressMonitor implements org.eclipse.jgit.lib.ProgressMonitor {
+    private int totalTasks = 0;
+    private int totalWork = 0;
+    private int completedTasks = -1;
+    private int actualState = 0;
+    private boolean stopped = false;
+    private String textToDisplay = "";
+    private String name = "";
     
-    ProgressMonitorDialog monitorDialog = null;
+    private PropertyChangeSupport propertyChange = null;
+
+    public JGitProgressMonitor(String name) {
+        this.name = name;
+    }
     
     public void start(int totalTasks) {
         System.out.println("start - totalTasks = "+totalTasks);
@@ -30,16 +34,23 @@ public class JGitProgressMonitor extends Thread implements org.eclipse.jgit.lib.
         boolean isUnknown = (totalWork == ProgressMonitor.UNKNOWN);
         System.out.println("beginTask "+title+"; totalWork = "+totalWork+", isUNKNOWN = " + isUnknown);
         completedTasks++;
-        if (monitorDialog != null && !isUnknown) {
-            monitorDialog.setMaxValue(totalWork);
+        this.totalWork = totalWork;
+        if (propertyChange != null) {
+            propertyChange.firePropertyChange("progressMax", -1, totalWork);
+            propertyChange.firePropertyChange("progressValue", -1, 0);
+            propertyChange.firePropertyChange("progressText", textToDisplay, generateTitle(title));
+            //System.out.println("beginTask - properties fired");
         }
         actualState = 0;
-        textToDisplay = title;
-        this.totalWork = totalWork;
+        textToDisplay = generateTitle(title);
     }
 
     public void update(int completed) {
-        System.out.println("update - completed = "+completed);
+        //System.out.println("update - completed = "+completed);
+        if (propertyChange != null) {
+            propertyChange.firePropertyChange("progressValue", actualState, actualState+completed);
+            //System.out.println("update - properties fired");
+        }
         actualState = actualState+completed;
     }
 
@@ -50,35 +61,24 @@ public class JGitProgressMonitor extends Thread implements org.eclipse.jgit.lib.
     }
 
     public boolean isCancelled() {
-        stopped = (monitorDialog == null) || !monitorDialog.isVisible();
+        stopped = stopped || Thread.interrupted();
+        //System.out.println("isCancelled request = "+stopped);
         return stopped;
     }
 
-    @Override
-    public void run() {
-        System.out.println("thread runs");
-        monitorDialog = new ProgressMonitorDialog(null, false);
-        monitorDialog.setVisible(true);
-        while (!stopped) {
-            try {
-                if (totalWork != ProgressMonitor.UNKNOWN) {
-                    monitorDialog.setProgress(completedTasks*100 + 100*actualState/totalWork);
-                } else {
-                    monitorDialog.setProgress(completedTasks*100);
-                }
-                monitorDialog.setText(textToDisplay);
-                monitorDialog.repaint();
-                //System.out.println("thread sleeping");
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ProgressMonitorDialog.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        monitorDialog.setVisible(false);
-        System.out.println("thread stopped");
-    }
     public void stopMonitor() {
         stopped = true;
     }
+
+    public void setPropertyChange(PropertyChangeSupport propertyChange) {
+        this.propertyChange = propertyChange;
+    }
     
+    private String generateTitle(String title) {
+        if (name.length() > 0) {
+            return "Git - " + name + " - " + title;
+        } else {
+            return "Git - " + title;
+        }                
+    }
 }

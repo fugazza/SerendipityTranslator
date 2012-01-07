@@ -24,6 +24,8 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,90 +43,21 @@ import serendipitytranslator.translationWindow.TranslateFrame;
  *
  * @author Vláďa
  */
-public class MainFrame extends javax.swing.JFrame {
+public class MainFrame extends javax.swing.JFrame implements PropertyChangeListener {
 
     PluginList plugins;
     TranslateFrame translateFrame = new TranslateFrame();
     SettingsDialog settingsDialog = new SettingsDialog(this, true);
     private HashMap<String,String> messageDatabase = null;
     String language;
-    private String version = "2.0";
+    private String version = "2.1";
     PluginDownloader pluginDownloader;
-    SwingWorker worker;
+    ExecutorService executorService;
 
     /** Creates new form MainFrame */
     public MainFrame() {
-        try {
-            Logger.getLogger("serendipitytranslator").addHandler(new FileHandler("error.log"));
-        } catch (IOException ex) {
-            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SecurityException ex) {
-            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
         initComponents();
-
-        PluginList.setSettings(settingsDialog);
-        language = settingsDialog.getLanguage();
-        settingsDialog.setMainWindowSizeAndPosition(this);
-        translateFrame.setLocation(this.getX()+this.getWidth(), 0);
-
-        settingsDialog.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals("language")) {
-                    language = (String) evt.getNewValue();
-                    updateLanguage();
-                } else if(evt.getPropertyName().equals("problemPlugins")) {
-                    pluginTable.getRowSorter().modelStructureChanged();
-                }
-            }
-
-        });
-
-        pluginTable.setModel(new PluginTableModel(plugins));
-        pluginTable.setColumnModel(new PluginColumnModel());
-
-        pluginTable.setDefaultRenderer(PluginStatus.class, new PluginTableRenderer());
-        pluginTable.setDefaultRenderer(DocumentationStatus.class, new PluginTableRenderer());
-
-        TableRowSorter sorter = new TableRowSorter<PluginTableModel>((PluginTableModel) pluginTable.getModel());
-        sorter.setRowFilter(new RowFilter<PluginTableModel, Integer>() {
-            @Override
-            public boolean include(Entry<? extends PluginTableModel, ? extends Integer> entry) {
-                PluginTableModel tableModel = entry.getModel();
-                PluginStatus status = (PluginStatus) tableModel.getValueAt(entry.getIdentifier(), 5);
-                DocumentationStatus docStatus = (DocumentationStatus) tableModel.getValueAt(entry.getIdentifier(), 7);
-                return !(settingsDialog.isShowEmptyPlugins() && status.equals(PluginStatus.problem) && docStatus.equals(DocumentationStatus.problem));
-            }
-
-        });
-        pluginTable.setRowSorter(sorter);
-
-        translateFrame.addPropertyChangeListener(new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals("file_saved")) {
-                    String pluginName =(String) evt.getNewValue();
-                    Plugin p = plugins.getPluginByName(pluginName);
-                    //System.out.println("plugin saved");
-                    if (p != null) {
-                        p.compareFiles();
-                        //System.out.println("plugin compared");
-                    }
-                }
-            }
-
-        });
-
-        try {
-            updateApplication();
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(MainFrame.class.getName()).log(Level.INFO, ex.getMessage());
-        } catch (IOException ex) {
-            Logger.getLogger(MainFrame.class.getName()).log(Level.INFO, ex.getMessage());
-        }
-
-        updateLanguage();
+        initApplication();
     }
 
     /** This method is called from within the constructor to
@@ -196,8 +129,8 @@ public class MainFrame extends javax.swing.JFrame {
         listButton = new javax.swing.JButton();
         downloadButton = new javax.swing.JButton();
         compareButton = new javax.swing.JButton();
-        downloadCancelButton = new javax.swing.JButton();
-        downloadProgressBar = new javax.swing.JProgressBar();
+        cancelButton = new javax.swing.JButton();
+        progressBar = new javax.swing.JProgressBar();
         jSeparator6 = new javax.swing.JSeparator();
         jMenuBar1 = new javax.swing.JMenuBar();
         applicationMenu = new javax.swing.JMenu();
@@ -227,7 +160,7 @@ public class MainFrame extends javax.swing.JFrame {
         jTextArea1.setFont(new java.awt.Font("Courier New", 0, 11));
         jTextArea1.setLineWrap(true);
         jTextArea1.setRows(5);
-        jTextArea1.setText("Copyright (c) 2009, Vladimír Ajgl\nAll rights reserved.\n\nRedistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:\n * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.\n  * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.\n * Neither the name of the author nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.\n\nTHIS SOFTWARE IS PROVIDED BY AUTHOR \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.");
+        jTextArea1.setText("Copyright (c) 2012, Vladimír Ajgl\nAll rights reserved.\n\nRedistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:\n * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.\n  * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.\n * Neither the name of the author nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.\n\nTHIS SOFTWARE IS PROVIDED BY AUTHOR \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.");
         jTextArea1.setWrapStyleWord(true);
         jScrollPane2.setViewportView(jTextArea1);
 
@@ -313,18 +246,20 @@ public class MainFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(aboutDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
-                    .addComponent(jLabel5)
-                    .addComponent(aboutCloseButton)
                     .addGroup(aboutDialogLayout.createSequentialGroup()
                         .addGroup(aboutDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel6)
-                            .addComponent(jLabel7))
-                        .addGap(32, 32, 32)
-                        .addGroup(aboutDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel10)
-                            .addComponent(jLabel8)
-                            .addComponent(versionLabel))
-                        .addGap(80, 80, 80)))
+                            .addComponent(jLabel5)
+                            .addComponent(aboutCloseButton)
+                            .addGroup(aboutDialogLayout.createSequentialGroup()
+                                .addGroup(aboutDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel6)
+                                    .addComponent(jLabel7))
+                                .addGap(32, 32, 32)
+                                .addGroup(aboutDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel10)
+                                    .addComponent(jLabel8)
+                                    .addComponent(versionLabel))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
                 .addContainerGap())
         );
         aboutDialogLayout.setVerticalGroup(
@@ -368,8 +303,8 @@ public class MainFrame extends javax.swing.JFrame {
             .addGroup(helpFrameLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(helpCloseButton)
-                .addContainerGap(267, Short.MAX_VALUE))
-            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                .addContainerGap())
+            .addComponent(jScrollPane4)
         );
         helpFrameLayout.setVerticalGroup(
             helpFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -689,14 +624,14 @@ public class MainFrame extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        downloadCancelButton.setText("Cancel");
-        downloadCancelButton.addActionListener(new java.awt.event.ActionListener() {
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                downloadCancelButtonActionPerformed(evt);
+                cancelButtonActionPerformed(evt);
             }
         });
 
-        downloadProgressBar.setStringPainted(true);
+        progressBar.setStringPainted(true);
 
         applicationMenu.setText("Application");
         applicationMenu.addActionListener(new java.awt.event.ActionListener() {
@@ -829,9 +764,9 @@ public class MainFrame extends javax.swing.JFrame {
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(downloadCancelButton)
+                        .addComponent(cancelButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(downloadProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -845,17 +780,69 @@ public class MainFrame extends javax.swing.JFrame {
                 .addComponent(jSeparator6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(downloadCancelButton)
-                    .addComponent(downloadProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(cancelButton)
+                    .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void initApplication() {
+        try {
+            Logger.getLogger("serendipitytranslator").addHandler(new FileHandler("error.log"));
+        } catch (IOException ex) {
+            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SecurityException ex) {
+            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+       
+        executorService = Executors.newSingleThreadExecutor();
+        PluginList.setSettings(settingsDialog);
+        language = settingsDialog.getLanguage();
+        settingsDialog.setMainWindowSizeAndPosition(this);
+        translateFrame.setLocation(this.getX()+this.getWidth(), 0);
+        progressBar.setVisible(false);
+        cancelButton.setVisible(false);
+
+        settingsDialog.addPropertyChangeListener(this);
+
+        pluginTable.setModel(new PluginTableModel(plugins));
+        pluginTable.setColumnModel(new PluginColumnModel());
+
+        pluginTable.setDefaultRenderer(PluginStatus.class, new PluginTableRenderer());
+        pluginTable.setDefaultRenderer(DocumentationStatus.class, new PluginTableRenderer());
+
+        TableRowSorter sorter = new TableRowSorter<PluginTableModel>((PluginTableModel) pluginTable.getModel());
+        sorter.setRowFilter(new RowFilter<PluginTableModel, Integer>() {
+            @Override
+            public boolean include(Entry<? extends PluginTableModel, ? extends Integer> entry) {
+                PluginTableModel tableModel = entry.getModel();
+                PluginStatus status = (PluginStatus) tableModel.getValueAt(entry.getIdentifier(), 5);
+                DocumentationStatus docStatus = (DocumentationStatus) tableModel.getValueAt(entry.getIdentifier(), 7);
+                return !(settingsDialog.isShowEmptyPlugins() && status.equals(PluginStatus.problem) && docStatus.equals(DocumentationStatus.problem));
+            }
+
+        });
+        pluginTable.setRowSorter(sorter);
+
+        translateFrame.addPropertyChangeListener(this);
+
+        try {
+            updateApplication();
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(MainFrame.class.getName()).log(Level.INFO, ex.getMessage());
+        } catch (IOException ex) {
+            Logger.getLogger(MainFrame.class.getName()).log(Level.INFO, ex.getMessage());
+        }
+
+        updateLanguage();
+    }
+    
     private void updateLanguage() {
         messageDatabase = new HashMap<String,String>();
         PluginList.setMessageDatabase(messageDatabase);
         plugins = PluginList.loadFromLocalDb(language);
+        plugins.addPropertyChangeListener(this);
         ((PluginTableModel) pluginTable.getModel()).setPluginList(plugins);
         pluginTable.repaint();
     }
@@ -864,84 +851,94 @@ public class MainFrame extends javax.swing.JFrame {
         PluginList.setSettings(settingsDialog);
         final boolean emptyPlugins = plugins.isEmpty();
         //plugins.loadFromRepository();
-        worker = new SwingWorker<Void, Void>() {
+        SwingWorker worker = new SwingWorker<Void, Void>() {
             @Override
             public Void doInBackground() {
+                System.out.println("downloading of file list started");
                 plugins.loadFromWeb();                
+                System.out.println("downloading of file list finished");
                 return null;
             }
             
             @Override
             public void done() {
+                pluginTable.getRowSorter().modelStructureChanged();
+                System.out.println("downloading of file list completely done");
                 if (emptyPlugins) {
                     JOptionPane.showMessageDialog(null, "Now only list of available plugins was downloaded.\n" +
                             "To know which plugins are really translated, you must download all language files and compare them by content.\n" +
                             "Continue by click on 'Download Files' button.");
-                } else {
-                    //JOptionPane.showMessageDialog(null, "Before comparison.");
-                    int i = 0;
-                    for (Plugin p: plugins) {
-                        //auto-correct folders from previous versions
-                        File oldFolder = new File(LangFile.getDownloadDirName(p.getName()));
-                        File newFolder = new File(p.getFolder());
-                        //System.out.println(oldFolder.getAbsolutePath() + " should be renamed to " + newFolder.getAbsolutePath());
-                        if (oldFolder.exists() && !newFolder.equals(oldFolder)) {
-                            try {
-                                newFolder.mkdirs();
-                                Files.move(oldFolder.toPath(), newFolder.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                                //System.out.println("good");
-                            } catch (IOException ex) {
-                                //System.out.println("error");
-                                Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                            //boolean result = oldFolder.renameTo(newFolder);
-                        }
-
-                        // compare files, if they exist
-                        File enFile = LangFile.getFile(p.getFolder(),p.getName(),"en");
-                        if (enFile.exists()) {
-                            p.compareFiles();
-                        }
-                        i++;
-                        //JOptionPane.showMessageDialog(null, "plugin " + p.getName());
-                    }
-                    //JOptionPane.showMessageDialog(null, "After comparison. " + i);
                 }                
             }
             
         };
-        worker.execute();
+        
+        SwingWorker worker2 = new SwingWorker<Void,Void>() {
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                firePropertyChange("workStarted",null,"Comparison of plugins started");
+                firePropertyChange("progressMax",null,plugins.size());
+                //JOptionPane.showMessageDialog(null, "Before comparison.");
+                int i = 0;
+                for (Plugin p: plugins) {
+                    //auto-correct folders from previous versions
+                    File oldFolder = new File(LangFile.getDownloadDirName(p.getName()));
+                    File newFolder = new File(p.getFolder());
+                    //System.out.println(oldFolder.getAbsolutePath() + " should be renamed to " + newFolder.getAbsolutePath());
+                    if (oldFolder.exists() && !newFolder.equals(oldFolder)) {
+                        try {
+                            newFolder.mkdirs();
+                            Files.move(oldFolder.toPath(), newFolder.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                            //System.out.println("good");
+                        } catch (IOException ex) {
+                            //System.out.println("error");
+                            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        //boolean result = oldFolder.renameTo(newFolder);
+                    }
+
+                    // compare files, if they exist
+                    //File enFile = LangFile.getFile(p.getFolder(),p.getName(),"en");
+                    //if (enFile.exists()) {
+                        p.compareFiles();
+                    //}
+                    firePropertyChange("progressValue",i, ++i);
+                    firePropertyChange("progressText",null, "comparing "+i+"/"+plugins.size());
+                    progressBar.setString("comparing "+i+"/"+plugins.size()+"");
+                    //JOptionPane.showMessageDialog(null, "plugin " + p.getName());
+                }
+                //JOptionPane.showMessageDialog(null, "After comparison. " + i);
+                firePropertyChange("workFinished",null, plugins);
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                super.done();
+                pluginTable.getRowSorter().modelStructureChanged();
+            }
+            
+        };
+        if (executorService.isShutdown()) {
+            executorService = Executors.newSingleThreadExecutor();
+        }
+        executorService.submit(worker);
+        worker2.addPropertyChangeListener(this);
+        executorService.submit(worker2);
 }//GEN-LAST:event_listButtonActionPerformed
 
     private void downloadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
         if (plugins.isEmpty()) {
-            plugins.loadFromWeb();
+            listButtonActionPerformed(evt);
         }
 
         pluginDownloader = new PluginDownloader(plugins);
-        pluginDownloader.addPropertyChangeListener(new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals("pluginDowloaded")) {
-                    int progress = ((Integer) evt.getNewValue()).intValue();
-                    downloadProgressBar.setValue(progress);
-                    downloadProgressBar.setString(MessageFormat.format("{0} plugins from {1} downloaded", progress, plugins.size()));
-                    //pluginTable.getRowSorter().modelStructureChanged();
-                } else if (evt.getPropertyName().equals("dowloadFinished")) {
-                    downloadProgressBar.setVisible(false);
-                    downloadCancelButton.setVisible(false);
-                    pluginTable.getRowSorter().modelStructureChanged();
-                } else if (evt.getPropertyName().equals("pluginDowloadStarted")) {
-                    downloadProgressBar.setString(downloadProgressBar.getString()+" (now downloading "+evt.getNewValue()+")");
-                }
-            }
-
-        });
-        new Thread(pluginDownloader).start();
-        downloadCancelButton.setVisible(true);
-        downloadProgressBar.setVisible(true);
-        downloadProgressBar.setMinimum(0);
-        downloadProgressBar.setMaximum(plugins.size());
+        pluginDownloader.addPropertyChangeListener(this);
+        if (executorService.isShutdown()) {
+            executorService = Executors.newSingleThreadExecutor();
+        }
+        executorService.submit(pluginDownloader);
 
 }//GEN-LAST:event_downloadButtonActionPerformed
 
@@ -949,10 +946,37 @@ public class MainFrame extends javax.swing.JFrame {
         if (plugins.isEmpty()) {
             downloadButtonActionPerformed(evt);
         } else {
-            for (Plugin plugin: plugins) {
-                plugin.compareFiles();
+            SwingWorker compareWorker = new SwingWorker<Void, Void>() {
+
+                @Override
+                protected Void doInBackground() throws Exception {
+                    int i = 0;
+                    firePropertyChange("workStarted",null,"Comparison of plugins started.");
+                    firePropertyChange("progressMax", -1, plugins.size());
+                    for (Plugin plugin: plugins) {
+                        if (Thread.interrupted()) {
+                            break;
+                        }
+                        plugin.compareFiles();
+                        firePropertyChange("progressValue",i,++i);
+                        firePropertyChange("progressText",null, "comparing "+i+"/"+plugins.size());
+                    }
+                    firePropertyChange("workFinished",null,plugins);
+                    return null;
+                }
+
+                @Override
+                protected void done() {
+                    super.done();
+                    pluginTable.getRowSorter().modelStructureChanged();
+                }
+                
+            };
+            compareWorker.addPropertyChangeListener(this);
+            if (executorService.isShutdown()) {
+                executorService = Executors.newSingleThreadExecutor();
             }
-            pluginTable.getRowSorter().modelStructureChanged();
+            executorService.submit(compareWorker);
         }
 }//GEN-LAST:event_compareButtonActionPerformed
 
@@ -1045,73 +1069,98 @@ public class MainFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_statsMenuItemActionPerformed
 
     private void exportMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportMenuItemActionPerformed
-        try {
-            ZipOutputStream zipFile = new ZipOutputStream(new FileOutputStream(new File(language + "_s9y_translations.zip")));
+        SwingWorker exportWorker = new SwingWorker<Void,Void>() {
 
-            String pluginName;
-            File dir;
-            File dirUTF;
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    ZipOutputStream zipFile = new ZipOutputStream(new FileOutputStream(new File(language + "_s9y_translations.zip")));
 
-            FileFilter ff = new FileFilter() {
-                public boolean accept(File file) {
-                    String fileName = file.getName();
-                    boolean accepted = fileName.endsWith("en.inc.php")
-                            || fileName.endsWith(language+".inc.php")
-                            || (language.equals("cs") && fileName.endsWith("cz.inc.php"));
-                    //System.out.println(file.getName() + "; accepted = " + accepted);
-                    return accepted;
-                }
-            };
+                    String pluginName;
+                    File dir;
+                    File dirUTF;
 
-            FileFilter docuFilter = new FileFilter() {
-                public boolean accept(File file) {
-                    String fileName = file.getName();
-                    boolean accepted = fileName.equals("documentation_"+language+".html")
-                            || (language.equals("cs") && fileName.equals("documentation_cz.html"));
-                    return accepted;
-                }
-            };
-
-            for (Plugin p: plugins) {
-                pluginName = p.getName();
-                dir = new File(LangFile.getTranslatedDirName(pluginName));
-                dirUTF = new File(LangFile.getTranslatedDirName(pluginName)+"/UTF-8/");
-                //System.out.println("dir " + dir.getName() + "; exists = " + dir.exists());
-
-                // put into zip archive all language files
-                if (p.getLocalStatus().equals(PluginStatus.translated)
-                        && !(new LangFile(LangFile.LOCATIONS_TRANSLATED, p.getName(), language)).isIdenticTo(new LangFile(LangFile.LOCATION_PLUGINS, p.getName(), language))) {
-
-                    for (File f: dir.listFiles(ff)) {
-                        //System.out.println("File " + f.getName());
-                        ajglTools.zipFile(zipFile,f,f.getPath().substring(19));
-                    }
-                    for (File f: dirUTF.listFiles(ff)) {
-                        ajglTools.zipFile(zipFile,f,f.getPath().substring(19));
-                    }
-                    
-                }
-
-                // add into zip archive all documentation files
-                if (p.getDocumentationStatus().equals(DocumentationStatus.local)) {
-                    p.createUtfDocumentation();
-                    for (File f: dir.listFiles(docuFilter)) {
-                        ajglTools.zipFile(zipFile,f,f.getPath().substring(19));
-                    }
-                    if (dirUTF.exists()) {
-                        for (File f: dirUTF.listFiles(docuFilter)) {
-                            ajglTools.zipFile(zipFile,f,f.getPath().substring(19));
+                    FileFilter ff = new FileFilter() {
+                        public boolean accept(File file) {
+                            String fileName = file.getName();
+                            boolean accepted = fileName.endsWith("en.inc.php")
+                                    || fileName.endsWith(language+".inc.php")
+                                    || (language.equals("cs") && fileName.endsWith("cz.inc.php"));
+                            //System.out.println(file.getName() + "; accepted = " + accepted);
+                            return accepted;
                         }
+                    };
+
+                    FileFilter docuFilter = new FileFilter() {
+                        public boolean accept(File file) {
+                            String fileName = file.getName();
+                            boolean accepted = fileName.equals("documentation_"+language+".html")
+                                    || (language.equals("cs") && fileName.equals("documentation_cz.html"));
+                            return accepted;
+                        }
+                    };
+
+                    firePropertyChange("workStarted",null,"Export of translted plugins started.");
+                    firePropertyChange("progressMax", -1, plugins.size());
+                    int i = 0;
+                    for (Plugin p: plugins) {
+                        pluginName = p.getName();
+                        dir = new File(LangFile.getTranslatedDirName(pluginName));
+                        dirUTF = new File(LangFile.getTranslatedDirName(pluginName)+"/UTF-8/");
+                        //System.out.println("dir " + dir.getName() + "; exists = " + dir.exists());
+
+                        // put into zip archive all language files
+                        if (p.getLocalStatus().equals(PluginStatus.translated)
+                                && !(new LangFile(LangFile.LOCATIONS_TRANSLATED, p.getName(), language)).isIdenticTo(new LangFile(LangFile.LOCATION_PLUGINS, p.getName(), language))) {
+
+                            for (File f: dir.listFiles(ff)) {
+                                //System.out.println("File " + f.getName());
+                                ajglTools.zipFile(zipFile,f,f.getPath().substring(19));
+                            }
+                            for (File f: dirUTF.listFiles(ff)) {
+                                ajglTools.zipFile(zipFile,f,f.getPath().substring(19));
+                            }
+
+                        }
+
+                        // add into zip archive all documentation files
+                        if (p.getDocumentationStatus().equals(DocumentationStatus.local)) {
+                            p.createUtfDocumentation();
+                            for (File f: dir.listFiles(docuFilter)) {
+                                ajglTools.zipFile(zipFile,f,f.getPath().substring(19));
+                            }
+                            if (dirUTF.exists()) {
+                                for (File f: dirUTF.listFiles(docuFilter)) {
+                                    ajglTools.zipFile(zipFile,f,f.getPath().substring(19));
+                                }
+                            }
+                        }
+                        firePropertyChange("progressValue",i,++i);
+                        firePropertyChange("progressText",null, "comparing "+i+"/"+plugins.size());
                     }
+
+                    zipFile.close();
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                return null;
             }
 
-            zipFile.close();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+            @Override
+            protected void done() {
+                super.done();
+                firePropertyChange("workFinished",null, plugins);
+            }
+            
+        };
+            
+        if (executorService.isShutdown()) {
+            executorService = Executors.newSingleThreadExecutor();
         }
+        exportWorker.addPropertyChangeListener(this);
+        executorService.submit(exportWorker);
 
     }//GEN-LAST:event_exportMenuItemActionPerformed
 
@@ -1135,9 +1184,11 @@ public class MainFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_updateMenuItemActionPerformed
 
-    private void downloadCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downloadCancelButtonActionPerformed
-        pluginDownloader.stop();
-    }//GEN-LAST:event_downloadCancelButtonActionPerformed
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        executorService.shutdownNow();    
+        progressBar.setVisible(false);
+        cancelButton.setVisible(false);        
+    }//GEN-LAST:event_cancelButtonActionPerformed
 
     private boolean updateApplication() throws MalformedURLException, IOException {
         return ajglTools.updater(new URL(settingsDialog.getUpdateURL()+"/version.txt"),
@@ -1228,6 +1279,53 @@ public class MainFrame extends javax.swing.JFrame {
         statDocNoLabel.setText(Integer.toString(doc_no));
     }
 
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals("language")) {
+            language = (String) evt.getNewValue();
+            updateLanguage();
+        } else if(evt.getPropertyName().equals("problemPlugins")) {
+            pluginTable.getRowSorter().modelStructureChanged();
+        } else if (evt.getPropertyName().equals("file_saved")) {
+            String pluginName = (String) evt.getNewValue();
+            Plugin p = plugins.getPluginByName(pluginName);
+            //System.out.println("plugin saved");
+            if (p != null) {
+                p.compareFiles();
+                //System.out.println("plugin compared");
+            }
+        } else if (evt.getPropertyName().equals("progressMax")) {
+            //System.out.println("mainFrame - progressMax change received: " + evt.getNewValue());
+            int max = (Integer) evt.getNewValue();
+            if (max > 0) {
+                progressBar.setIndeterminate(false);
+                progressBar.setMaximum(max);
+            } else {
+                progressBar.setIndeterminate(true);
+            }                
+        } else if (evt.getPropertyName().equals("progressValue")) {
+            //System.out.println("mainFrame - progressValue change received: " + evt.getNewValue());
+            progressBar.setValue((Integer) evt.getNewValue());
+        } else if (evt.getPropertyName().equals("progressText")) {
+            //System.out.println("mainFrame - progressText change received: " + evt.getNewValue());
+            progressBar.setString((String) evt.getNewValue());
+        } else if (evt.getPropertyName().equals("pluginDowloaded")) {
+            int progress = ((Integer) evt.getNewValue()).intValue();
+            progressBar.setValue(progress);
+            progressBar.setString(MessageFormat.format("{0} plugins from {1} downloaded", progress, plugins.size()));
+            //pluginTable.getRowSorter().modelStructureChanged();
+        } else if (evt.getPropertyName().equals("workStarted")) {
+            progressBar.setIndeterminate(false);
+            progressBar.setVisible(true);
+            cancelButton.setVisible(true);
+            progressBar.setString((String) evt.getNewValue());
+        } else if (evt.getPropertyName().equals("workFinished")) {
+            progressBar.setIndeterminate(false);
+            progressBar.setVisible(false);
+            cancelButton.setVisible(false);
+        }
+
+    }
+    
     /**
     * @param args the command line arguments
     */
@@ -1244,13 +1342,12 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JDialog aboutDialog;
     private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JMenu applicationMenu;
+    private javax.swing.JButton cancelButton;
     private javax.swing.JButton closeStatsButton;
     private javax.swing.JButton compareButton;
     private javax.swing.JMenuItem compareMenuItem;
     private javax.swing.JButton downloadButton;
-    private javax.swing.JButton downloadCancelButton;
     private javax.swing.JMenuItem downloadMenuItem;
-    private javax.swing.JProgressBar downloadProgressBar;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenuItem exportMenuItem;
     private javax.swing.JButton helpCloseButton;
@@ -1300,6 +1397,7 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JButton listButton;
     private javax.swing.JMenuItem manualMenuItem;
     private javax.swing.JTable pluginTable;
+    private javax.swing.JProgressBar progressBar;
     private javax.swing.JMenuItem settingsMenuItem;
     private javax.swing.JLabel statDocFullLabel;
     private javax.swing.JLabel statDocLocalLabel;

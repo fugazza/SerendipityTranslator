@@ -8,7 +8,7 @@
   <body>
 <h2>Users' guide</h2>
 <h3>Settings (shortcut key "S")</h3>
-<img width="498" height="533" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="settings_dialog.png" alt="" />
+<img width="484" height="524" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="settings_dialog.png" alt="" />
 
 <p>
 First it is recomended to set up the programm. Click on "Settings" (shortcut key "s"). Set the <b>language</b> you want to translate to. Set also the <b>name and e-mail of translator</b>. It will be used only to be included in translated files, to let know further translators who did the translations before.
@@ -22,23 +22,45 @@ First it is recomended to set up the programm. Click on "Settings" (shortcut key
 <p>
     <b>Serendipity core</b>, <b>Additional plugins</b>, <b>Additional themes</b> - Here you can set the access method (<b>Repository type</b>) and addres of remote repository (<b>URL</b>), from which the lang files are downloaded, and where to store them on your computer (<b>Local folder</b>). Default settings work well, in first it is not necessary to change it. If you observe difficulties, eg. downloading seem to be slow, you can try to change it. But you shoud read <a href="#protocols">paragraph about protocols</a> first.
 </p>
+<p>
+    Button <b>Reset to default settings</b> will set defaults for remote type and URLs for all three repositories.
+</p>
 
 <h3>Main window</h3>
 <h4>"Update plugin list" button (shortcut key "U")</h4>
-After clicking, the application will connect to the internet repository (the same as Spartacus uses), download the list of plugins and will try to know, which plugin includes translated language files. In this moment the application does not know the content of language files. It only knows, that some translated file exists. To prospect language files it is necessary to download them by clicking on following button.
-
-<h4>"Download files" button (shortcut key "D")</h4>
-<p>The program will download language files - english files and also the files in selected local language (see Settings) and will compare them by content. Downloading can be lengthy, therefore there is progress bar that informs you about the downloading progress.
+<p>
+    After clicking, the application will connect to the internet repository (the same as Spartacus uses), download the list of plugins and will try to know, which plugin includes translated language files. In this moment the application does not know the content of language files. It only knows, that some translated file exists. To prospect language files it is necessary to download them by clicking on following button.
 </p>
 <p>
-<img width="540" height="90" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="download_progress.png" alt="" />
+    In version 2.1, the native git protocol was fully implemented. This protocol needs to update of whole repository before it can know the list of plugins. It means that for git native protocol, the buttons "Update plugin list" and "Download files" do the same thing. The progress of acquiring list of plugins is now displayed in <a href="#status_bar">status bar</a>.
+</p>
+
+<h4>"Download files" button (shortcut key "D")</h4>
+<p>
+    The program will download language files - english files and also the files in selected local language (see Settings) and will compare them by content. Downloading can be lengthy, therefore there is bar that informs you about the downloading progress in <a href="#status_bar">status bar</a>.
 </p>
 <p>In version 1.6 was added feature, that downloads only changed files. Downloading is now a bit faster. Also you can now stop the downloading by bancel button. Since mentioned version, documentation files (documentation_xx.html, readmes, ChangeLogs) are also downloaded to enable you to translate also this documentation. See section <a href="#documentation">Documentation translations</a>.
 </p>
 
 <h4>"Compare files by content" button (shortcut key "C")</h4>
-If there comes up a situation when files are not compared (e.g. after you translate <a href="#documentation">documentation files</a>), you can force the comparison by clicking this button. The programm compares locally stored files, nothing is downloaded from internet.
+<p>
+    If there comes up a situation when files are not compared (e.g. after you translate <a href="#documentation">documentation files</a>), you can force the comparison by clicking this button. The programm compares locally stored files, nothing is downloaded from internet.
+</p>
+<p>
+With all the features added along the time, the compare operation got a little bit complicated and lengthy. Its progress is displayed in <a href="#status_bar">status bar</a>.
+</p>    
 
+<a name="status_bar"></a><h4>Status bar</h4>
+<p>
+<img width="526" height="43" style="border: 0px; padding-left: 5px; padding-right: 5px;" src="status_bar.png" alt="" />
+</p>
+<p>
+    All posibly lengthy operations are now observed and their progress is displayed here, on the bottom of main window. If you do not want to wait for the finish of operation, you can stop it by clicking the button <b>Cancel</b>.
+</p>
+<p>
+    If no lengthy operation is running, the status bare hides automatically.
+</p>    
+    
 <h4>Plugin table</h4>
 <ul>
 <li>double-click on the row, or select the row and press "enter" - will open translation window</li>
@@ -132,14 +154,12 @@ The documentation files in utf-8 encoding are created after clicking on <a href=
 <p>
     ATTENTION! URL address of internet repository is bound with type of repository - eg. github.com has its git html web page, sourceforge.net offers its web frontend for cvs. Serendipity Translator does not check this dependencies, so you can make it not working, when you set it wrong, eg. when you write github.com in URL field and select cvs repository.
 </p>
-<p>
-    ATTENTION! Default settings for downloading Serendipity Core files is not perfect. In November 2011 the core was moved from berlios.de (which was stopped) to github.com. Unfortunately the html frontend of github is difficult to parse, so now the files are not downloaded from the most recent commit. Additionally the information about last modified date is displayed through javascript, which Serendipity Translator cannot pass. It causes, that all files are always downloaded (more net traffic and more time), and that documentation cannot display properly its status (translated, not translated). Much better is to set the "git native". See below.
-</p>
 Protocol types:
 <ul>
-    <li><b>HTML protocols - svn, cvs, git html</b> - It's easy, these protocols connect to www interface of repository (the same way you can watch them in your internet browser), read its content, parse it and gets the information about plugins and files. These protocols download all files changed from last download. Than the app works with downloaded files.</li>
+    <li><b>HTML protocols - svn, cvs</b> - It's easy, these protocols connect to www interface of repository (the same way you can watch them in your internet browser), read its content, parse it and gets the information about plugins and files. These protocols download all files changed from last download. Than the app works with downloaded files.</li>
+    <li><b>git html (deprecated)</b> - It is regular html protocol, that connects to web page of gitHub and tries to parse the html page. But at gitHub there are issues, that make the use of this protocol uncomfortable. The html frontend of github is filled with javascript, which Serendipity Translator cannot pass. For example the information about last modified date known to SerendipityTranslator only in special cases. It causes, that all files are almost always downloaded (more net traffic and more time), and that documentation cannot display properly its status (translated, not translated). Therefore I recommend to use default "git native" protocol. See below.</li>
     <li><b>folder</b> - Ignores the remote URL settings. Just reads the files from local directory. Does not download anything. It is necessary to update the files outside Serendipity Translator. The date is red form the file's last modified date. It is reason, why next scenario does not work well: to set externally git or cvs file, update it externally and access it through Serendipity Translator "folder" protocol. Because the files updated through git (cvs) do not have the date equivalent to the date of last commit, when they were modified.</li>
-    <li><b>git native</b> - benefits from versioning system git. Currently it ignores the remote URL settings and it cannot set up local repository, nor connect it to remote repository (eg. github). You must do it manually outside of Serendipity Translator. Then you can point Serendipity Translator to local folder with repository, then the app is able to update automatically local repository from remote repository. Serendipity Translator gets the file date not from last-modified property, but from the date of last commit in git, when the file was modified.</li>    
+    <li><b>git native</b> - benefits from versioning system git. From version 2.1 it can set up local repository and connect it to remote repository (eg. github) given in remote URL settings. The URL is used only to initial linking of local repository to remote one. If you want to update local repository from different remote repository, you must delete whole local directory with git repository and re-create it with new URL. Serendipity Translator gets the file date not from last-modified property, but from the date of last commit in git, when the file was modified.</li>    
 </ul>
 
 <h2>How the program works internally</h2>
@@ -213,6 +233,15 @@ Added - now also files "todo", "copy*", "author(s)" are downloaded as documentat
 Added - The "Settings" dialogue was extended. Now it is possible to set the internet repository, from which language files will be downloaded.<br />
 Added - support of git.<br />
 Added - function to update the application. A library is used to access the git, so now the application has more than one file. It is necessarry to download all files in one zip file and then to unpack it.
+</li>
+
+<li><b>2.1</b> - 2012/01/07<br />
+Added - possibility to reset settings to default values<br />
+Modified - all default settings changed to point to gihub using native git protocol.<br />
+Improved - downloading by native git protocol. Now fully usable - it can set up new git repository, download it from remote, also it can announce well the progress of update.<br />
+Modified - the progress dialog was removed, the progress bar was integrated in main window and now displays also the progress of reading list of plugins and progress of comparing operation.<br />
+Improved - git html protocol. Now it downloads the latest commit. Nevertheless it is recomended to use default setting and to access the gitHub via native git protocol.<br />
+Modified - the bundled jgit library was updated to recent version.
 </li>
 </ul>
   </body>
