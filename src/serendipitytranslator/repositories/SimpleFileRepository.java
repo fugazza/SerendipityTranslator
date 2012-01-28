@@ -75,8 +75,6 @@ public class SimpleFileRepository extends AbstractTranslatorRepository {
                         if (p.getType().equals(PluginType.template)) {
                             p.setType(PluginType.event);
                         }
-                    } else {
-                        p.setType(PluginType.template);
                     }
                     p.setRepository(this);
                     if (folderPath.length()>0) {

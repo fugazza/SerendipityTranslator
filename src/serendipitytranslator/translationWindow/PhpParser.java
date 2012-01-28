@@ -5,10 +5,15 @@
 
 package serendipitytranslator.translationWindow;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -20,6 +25,7 @@ public class PhpParser implements Enumeration<String> {
     private String token = null;
     private boolean inlineComment = false;
     private boolean comment = false;
+    private static boolean isInstalledExternalParser = true;
 
     public static boolean hasClosedStrings(String statement) {
         StringReader sr = new StringReader(statement);
@@ -69,6 +75,31 @@ public class PhpParser implements Enumeration<String> {
         return true;
     }
 
+    public static boolean checkByExternalParser(File f) throws IOException {
+        if (isInstalledExternalParser) {
+            String  toExec[] = new String[] { "php", "-l", "-d", "display_errors=On", f.getPath() };
+            Process p = Runtime.getRuntime().exec( toExec );
+            InputStream is = p.getInputStream();
+            int c;
+            String result = "";
+            while ((c=is.read()) != -1) {
+                result += Character.toChars(c)[0];
+            }
+            result = result.trim();
+            System.out.println("parsing " + f.getName() + ": " + result);
+            if (result.startsWith("php")) {
+                isInstalledExternalParser = false;
+                throw new IOException("parser error: external php parser not found: " + result);
+            } else if (result.startsWith("No syntax errors detected")) {
+                return true;
+            } else {
+                throw new IOException("parser error: " + result);                    
+            }
+        } else {
+            return true;
+        }
+    }
+    
     public PhpParser(Reader r) {
         reader = r;
         findPhp();
@@ -102,7 +133,7 @@ public class PhpParser implements Enumeration<String> {
             int c;
             char ch[];
             
-            token = new String("");
+            token = "";
             c = reader.read();
             while (c != -1 && (c != ';' || comment || inlineComment)) {
                 if (comment) {

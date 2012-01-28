@@ -66,8 +66,6 @@ public class SvnHTMLRepository extends AbstractHTMLRepository {
                             if (p.getType().equals(PluginType.template)) {
                                 p.setType(PluginType.event);
                             }
-                        } else {
-                            p.setType(PluginType.template);
                         }
                         p.setIntern(isIntern);
                         p.setRepository(this);

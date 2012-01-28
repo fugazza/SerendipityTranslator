@@ -12,6 +12,7 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -69,7 +70,9 @@ public final class Plugin implements Comparator {
 //                intern = true;
 //            }
 //        }
-
+        if (name.equals("homepage")) {
+            System.out.println("contructor: hompage plugin type = " + getType());
+        }
     }
 
     public Plugin(String name, String language) {
@@ -154,9 +157,18 @@ public final class Plugin implements Comparator {
                     || filename.toLowerCase().contains("todo")
                     || filename.toLowerCase().contains("author")
                     && !filename.toLowerCase().endsWith(".tpl")
+                    && !filename.toLowerCase().endsWith(".php")
                );
     }
 
+    public ArrayList<SerendipityFileInfo> getFileList() {
+        if (repository instanceof SimpleFileRepository) {
+            return ((SimpleFileRepository) repository).getFileList(folderInRepository);
+        } else {
+            return null;
+        }
+    }
+    
     public void downloadFilelist() {
         if (repository instanceof AbstractUpdatableRepository) {
             ((AbstractUpdatableRepository) repository).updateFileList(folderInRepository);
@@ -178,11 +190,11 @@ public final class Plugin implements Comparator {
      */
     public void compareFiles() {
         //JOptionPane.showMessageDialog(null, "before downloaded file");
-        LangFile downloadedLocFile = new LangFile(repository.getRepositoryFolderName()+"/"+folderInRepository,name,language);
+        LangFile downloadedLocFile = new LangFile(this,language);
         //JOptionPane.showMessageDialog(null, "before translated file");
-        LangFile translatedLocFile = new LangFile(LangFile.LOCATIONS_TRANSLATED,name,language);
+        LangFile translatedLocFile = new LangFile(LangFile.LOCATIONS_TRANSLATED,this,language);
         //JOptionPane.showMessageDialog(null, "before english file");
-        LangFile enFile = new LangFile(repository.getRepositoryFolderName()+"/"+folderInRepository,name,"en");
+        LangFile enFile = new LangFile(this,"en");
         //JOptionPane.showMessageDialog(null, "after english file");
 
         enCount = enFile.getKeysCount();
@@ -228,11 +240,15 @@ public final class Plugin implements Comparator {
         // --------------- set status for documentation files ------------------
         SerendipityFileInfo enDocFile = getFileInfo(folderInRepository,getDocFileNameEn());
         SerendipityFileInfo csDocFile = getFileInfo(folderInRepository,getDocFileNameLoc());
-        File csDocFileLocal = new File(LangFile.getTranslatedDirName(name)+ "/" + getDocFileNameLoc());
+        File csDocFileLocal = new File(getTranslatedDirName()+ "/" + getDocFileNameLoc());
 //        if (enDocFile != null) {
 //            System.out.println(name + ": en " + enDocFile.getFilename() + "; cs "+csDocFile+"; folder = "+folderInRepository);
 //        }
         
+        if (getName().equals("homepage")) {
+            System.out.println("english doc filename = "+getDocFileNameEn()+"; docFile = "+enDocFile);
+        }
+
         if (enDocFile == null) { // english documentation file does not exist
             setDocumentationStatus(DocumentationStatus.problem);
         } else if (csDocFile != null) { // documentation in local language exists
@@ -344,15 +360,15 @@ public final class Plugin implements Comparator {
     }
 
     public void createUtfDocumentation() {
-        File locDocFile = new File(LangFile.getTranslatedDirName(name)+"/"+getDocFileNameLoc());
+        File locDocFile = new File(getTranslatedDirName()+"/"+getDocFileNameLoc());
         if (locDocFile.exists()) {
-            File locDocUtfFile = new File(LangFile.getTranslatedDirName(name)+"/UTF-8/"+getDocFileNameLoc());
+            File locDocUtfFile = new File(getTranslatedDirName()+"/UTF-8/"+getDocFileNameLoc());
             if (!locDocUtfFile.exists()) {
                 _encodeDocFile(locDocFile, locDocUtfFile, LangFile.getCharsetName(language), "utf-8");
             }
             if (language.equals("cs")) {
-                File czDocFile = new File(LangFile.getTranslatedDirName(name)+"/documentation_cz.html");
-                File czDocUtfFile = new File(LangFile.getTranslatedDirName(name)+"/UTF-8/documentation_cz.html");
+                File czDocFile = new File(getTranslatedDirName()+"/documentation_cz.html");
+                File czDocUtfFile = new File(getTranslatedDirName()+"/UTF-8/documentation_cz.html");
                 if (!czDocFile.exists()) {
                     _encodeDocFile(locDocFile, czDocFile, LangFile.getCharsetName(language), "iso-8859-2");
                     _encodeDocFile(locDocFile, czDocUtfFile, LangFile.getCharsetName(language), "utf-8");
@@ -422,5 +438,22 @@ public final class Plugin implements Comparator {
         return repository.getRepositoryFolderName()+"/"+folderInRepository;
     }
     
+    public String getTranslatedDirName() {
+        String dirname;
+        String basedir = "plugins_translated/";
+        if (getType().equals(PluginType.system)) {
+            dirname = basedir + getName();
+        } else if (getType().equals(PluginType.template) && isIntern()) {
+            dirname = basedir + "core_templates/" + getName();
+        } else if (getType().equals(PluginType.template) && !isIntern()) {
+            dirname = basedir + "spartacus_templates/" + getName();
+        } else if (isIntern()) {
+            dirname = basedir + "core/" + getName();
+        } else {
+            dirname = basedir + "spartacus/" + getName();
+        }
+        //System.out.println("translated dir name for " + getName() + " = " + dirname);
+        return dirname;
+    }
     
 }

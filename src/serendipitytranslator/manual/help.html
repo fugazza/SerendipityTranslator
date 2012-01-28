@@ -65,6 +65,8 @@ With all the features added along the time, the compare operation got a little b
 <ul>
 <li>double-click on the row, or select the row and press "enter" - will open translation window</li>
 
+<li>Right-click on the row will display info about plugin and list of files used during translations.</li>
+
 <li>"Type" column:
    <ol>
    <li>system - system file, the core language file that serendipity uses</li>
@@ -183,6 +185,11 @@ Protocol types:
 </li>
 </ul>
 
+<h3>Syntax check of translated files</h3>
+<p>
+    If you have php installed (it means when it is accessible through typing "php -l filename.php" through command line), then all files are passed to this external php parser to check the syntax. So you are warned always, when you make non-valid php code, that could potentially shutdown whole blog.
+</p>
+
 <a name="export_to_zip"></a>
 <h3>Export to zip file</h3>
 <ul>
@@ -242,6 +249,14 @@ Improved - downloading by native git protocol. Now fully usable - it can set up 
 Modified - the progress dialog was removed, the progress bar was integrated in main window and now displays also the progress of reading list of plugins and progress of comparing operation.<br />
 Improved - git html protocol. Now it downloads the latest commit. Nevertheless it is recomended to use default setting and to access the gitHub via native git protocol.<br />
 Modified - the bundled jgit library was updated to recent version.
+</li>
+
+<li><b>2.2</b> - not released yet<br />
+Fixed - wrong classification of plugins (core/extern; plugin/template)<br />
+Fixed - wrong directories in export to zip file<br />
+Added - splash screen on startup<br />
+Added - check of php syntax using external php parser<br />
+Added - display info about plugin and its filelist after right click on row of plugin in plugin window
 </li>
 </ul>
   </body>

@@ -12,6 +12,9 @@
 package serendipitytranslator.mainWindow;
 
 import ajgl.utils.ajglTools;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.SplashScreen;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -23,10 +26,13 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipOutputStream;
@@ -45,18 +51,21 @@ import serendipitytranslator.translationWindow.TranslateFrame;
  */
 public class MainFrame extends javax.swing.JFrame implements PropertyChangeListener {
 
-    PluginList plugins;
-    TranslateFrame translateFrame = new TranslateFrame();
-    SettingsDialog settingsDialog = new SettingsDialog(this, true);
+    private PluginList plugins;
+    private TranslateFrame translateFrame = new TranslateFrame();
+    private SettingsDialog settingsDialog = new SettingsDialog(this, true);
     private HashMap<String,String> messageDatabase = null;
-    String language;
+    private String language;
     private String version = "2.1";
-    PluginDownloader pluginDownloader;
-    ExecutorService executorService;
+    private PluginDownloader pluginDownloader;
+    private ExecutorService executorService;
+    final static Logger l = Logger.getLogger("serendipitytranslator");
 
     /** Creates new form MainFrame */
     public MainFrame() {
+        writeInSplashScreen("Loading graphics");
         initComponents();
+        writeInSplashScreen("Loading settings and content");
         initApplication();
     }
 
@@ -123,6 +132,9 @@ public class MainFrame extends javax.swing.JFrame implements PropertyChangeListe
         statDocFullLabel = new javax.swing.JLabel();
         statDocTotalLabel = new javax.swing.JLabel();
         statDocPartLabel = new javax.swing.JLabel();
+        infoDialog = new javax.swing.JDialog();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        infoTextArea = new javax.swing.JTextArea();
         jScrollPane1 = new javax.swing.JScrollPane();
         pluginTable = new javax.swing.JTable();
         jPanel1 = new javax.swing.JPanel();
@@ -535,6 +547,37 @@ public class MainFrame extends javax.swing.JFrame implements PropertyChangeListe
                 .addContainerGap())
         );
 
+        infoDialog.setIconImages(null);
+        infoDialog.setMinimumSize(new java.awt.Dimension(300, 200));
+        infoDialog.setType(java.awt.Window.Type.POPUP);
+        infoDialog.setUndecorated(true);
+
+        jScrollPane5.setBorder(null);
+
+        infoTextArea.setBackground(infoDialog.getBackground());
+        infoTextArea.setColumns(20);
+        infoTextArea.setEditable(false);
+        infoTextArea.setRows(5);
+        infoTextArea.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                infoTextAreaMouseClicked(evt);
+            }
+        });
+        jScrollPane5.setViewportView(infoTextArea);
+
+        javax.swing.GroupLayout infoDialogLayout = new javax.swing.GroupLayout(infoDialog.getContentPane());
+        infoDialog.getContentPane().setLayout(infoDialogLayout);
+        infoDialogLayout.setHorizontalGroup(
+            infoDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
+        );
+        infoDialogLayout.setVerticalGroup(
+            infoDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(infoDialogLayout.createSequentialGroup()
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Serendipity translator");
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -789,7 +832,7 @@ public class MainFrame extends javax.swing.JFrame implements PropertyChangeListe
 
     private void initApplication() {
         try {
-            Logger.getLogger("serendipitytranslator").addHandler(new FileHandler("error.log"));
+            l.addHandler(new FileHandler("error.log"));
         } catch (IOException ex) {
             Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SecurityException ex) {
@@ -882,14 +925,27 @@ public class MainFrame extends javax.swing.JFrame implements PropertyChangeListe
                 //JOptionPane.showMessageDialog(null, "Before comparison.");
                 int i = 0;
                 for (Plugin p: plugins) {
+                    if (Thread.interrupted()) {
+                        break;
+                    }
                     //auto-correct folders from previous versions
-                    File oldFolder = new File(LangFile.getDownloadDirName(p.getName()));
+                    File oldFolder = new File(LangFile.getOldDownloadDirName(p.getName()));
                     File newFolder = new File(p.getFolder());
                     //System.out.println(oldFolder.getAbsolutePath() + " should be renamed to " + newFolder.getAbsolutePath());
                     if (oldFolder.exists() && !newFolder.equals(oldFolder)) {
                         try {
-                            newFolder.mkdirs();
-                            Files.move(oldFolder.toPath(), newFolder.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                            if (!newFolder.exists()) {
+                                //System.out.println("new folder does not exist and will be created");
+                                newFolder.mkdirs();
+                                //System.out.println("before moving");
+                                Files.move(oldFolder.toPath(), newFolder.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                            } else {
+                                //System.out.println("new folder exists, no overwrite will be performed, old will be deleted");
+                                for (File f:oldFolder.listFiles()) {
+                                    f.delete();
+                                }
+                                oldFolder.delete();
+                            }                           
                             //System.out.println("good");
                         } catch (IOException ex) {
                             //System.out.println("error");
@@ -983,6 +1039,24 @@ public class MainFrame extends javax.swing.JFrame implements PropertyChangeListe
     private void pluginTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_pluginTableMouseClicked
         if (evt.getButton() == MouseEvent.BUTTON1 && evt.getClickCount() == 2) {
             openPluginInTranslateFrame();
+        } else if (evt.getButton() == MouseEvent.BUTTON3) {
+            int clickedRow = pluginTable.rowAtPoint(evt.getPoint());
+            pluginTable.setRowSelectionInterval(clickedRow, clickedRow);
+            infoDialog.setVisible(true);
+            infoDialog.setLocation(evt.getLocationOnScreen().x+10,evt.getLocationOnScreen().y);
+            Plugin selectedPlugin = plugins.get(
+                    pluginTable.convertRowIndexToModel(pluginTable.getSelectedRow())
+                    );
+            String textToDisplay = selectedPlugin.getName()
+                                + "\r\n" + "english messages: " + selectedPlugin.getEnCount()
+                                + "\r\n" + language + " messages: " + selectedPlugin.getLocCount();
+            SimpleDateFormat format = new SimpleDateFormat("dd.MM.YYYY hh:mm");
+            for(SerendipityFileInfo fi: selectedPlugin.getFileList()) {
+                if (fi.getFilename().contains("_"+language+".") || fi.getFilename().contains("_en.") || Plugin.isDocReadme(fi.getFilename())) {
+                    textToDisplay += "\r\n" + format.format(new Date(fi.getFileDate())) + " - " + fi.getFilename();
+                }
+            }
+            infoTextArea.setText(textToDisplay);
         }
     }//GEN-LAST:event_pluginTableMouseClicked
 
@@ -990,13 +1064,13 @@ public class MainFrame extends javax.swing.JFrame implements PropertyChangeListe
         Plugin selectedPlugin = plugins.get(
                 pluginTable.convertRowIndexToModel(pluginTable.getSelectedRow())
                 );
-        //System.out.println("Selected plugin: " + selectedPlugin);
+        //System.out.println("Selected plugin: " + selectedPlugin.getName() + "; folder = " + selectedPlugin.getFolder());
 
         try {
             if (messageDatabase != null) {
                 translateFrame.setMessageDatabase(messageDatabase);
             }
-            translateFrame.setPluginAndLanguage(selectedPlugin.getFolder(), selectedPlugin.getName(), language);
+            translateFrame.setPluginAndLanguage(selectedPlugin, language);
             translateFrame.setTranslatorName(settingsDialog.getTranslator());
             translateFrame.setVisible(true);
         } catch (FileNotFoundException e) {
@@ -1105,13 +1179,13 @@ public class MainFrame extends javax.swing.JFrame implements PropertyChangeListe
                     int i = 0;
                     for (Plugin p: plugins) {
                         pluginName = p.getName();
-                        dir = new File(LangFile.getTranslatedDirName(pluginName));
-                        dirUTF = new File(LangFile.getTranslatedDirName(pluginName)+"/UTF-8/");
+                        dir = new File(p.getTranslatedDirName());
+                        dirUTF = new File(p.getTranslatedDirName()+"/UTF-8/");
                         //System.out.println("dir " + dir.getName() + "; exists = " + dir.exists());
 
                         // put into zip archive all language files
                         if (p.getLocalStatus().equals(PluginStatus.translated)
-                                && !(new LangFile(LangFile.LOCATIONS_TRANSLATED, p.getName(), language)).isIdenticTo(new LangFile(LangFile.LOCATION_PLUGINS, p.getName(), language))) {
+                                && !(new LangFile(LangFile.LOCATIONS_TRANSLATED, p, language)).isIdenticTo(new LangFile(p, language))) {
 
                             for (File f: dir.listFiles(ff)) {
                                 //System.out.println("File " + f.getName());
@@ -1136,7 +1210,7 @@ public class MainFrame extends javax.swing.JFrame implements PropertyChangeListe
                             }
                         }
                         firePropertyChange("progressValue",i,++i);
-                        firePropertyChange("progressText",null, "comparing "+i+"/"+plugins.size());
+                        firePropertyChange("progressText",null, "exporting "+i+"/"+plugins.size());
                     }
 
                     zipFile.close();
@@ -1189,6 +1263,10 @@ public class MainFrame extends javax.swing.JFrame implements PropertyChangeListe
         progressBar.setVisible(false);
         cancelButton.setVisible(false);        
     }//GEN-LAST:event_cancelButtonActionPerformed
+
+    private void infoTextAreaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_infoTextAreaMouseClicked
+        infoDialog.setVisible(false);
+    }//GEN-LAST:event_infoTextAreaMouseClicked
 
     private boolean updateApplication() throws MalformedURLException, IOException {
         return ajglTools.updater(new URL(settingsDialog.getUpdateURL()+"/version.txt"),
@@ -1326,10 +1404,24 @@ public class MainFrame extends javax.swing.JFrame implements PropertyChangeListe
 
     }
     
+    private void writeLoggerInfo(String name) {
+        Logger ll = Logger.getLogger(name);
+        System.out.println("listing handlers for logger "+ll.getName());
+        for (Handler h: ll.getHandlers()) {
+            System.out.println("handler " + h.getClass() + "; encoding "+h.getEncoding() + "; error manager = "+h.getErrorManager()+"; "+h.getLevel());
+            if (h instanceof FileHandler) {
+                FileHandler fh = (FileHandler) h;
+                System.out.println("last is file handler ");
+            }
+        }
+        System.out.println("finished listing handlers for logger "+l.getName());        
+    }
+    
     /**
     * @param args the command line arguments
     */
     public static void main(String args[]) {
+        writeInSplashScreen("Loading application");
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new MainFrame().setVisible(true);
@@ -1337,6 +1429,25 @@ public class MainFrame extends javax.swing.JFrame implements PropertyChangeListe
         });
     }
 
+    public static void writeInSplashScreen(String text) {
+        SplashScreen splash = SplashScreen.getSplashScreen();
+        if (splash != null) {
+            Graphics2D splashGraph = splash.createGraphics();
+            if (splashGraph!= null) {
+                splashGraph.setColor(new Color(37,36,60));
+                splashGraph.fillRect(25, 223, 200, 14);
+                splashGraph.setColor(Color.WHITE);
+                splashGraph.drawString(text, 21, 233);
+                splash.update();
+                //System.out.println("splash screen modified");
+            } else {
+                //System.out.println("no graphics to draw in splash screen");
+            }
+        } else {
+            //System.out.println("no splash screen found");
+        }        
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton aboutCloseButton;
     private javax.swing.JDialog aboutDialog;
@@ -1353,6 +1464,8 @@ public class MainFrame extends javax.swing.JFrame implements PropertyChangeListe
     private javax.swing.JButton helpCloseButton;
     private javax.swing.JFrame helpFrame;
     private javax.swing.JMenu helpMenu;
+    private javax.swing.JDialog infoDialog;
+    private javax.swing.JTextArea infoTextArea;
     private javax.swing.JEditorPane jEditorPane1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -1383,6 +1496,7 @@ public class MainFrame extends javax.swing.JFrame implements PropertyChangeListe
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;

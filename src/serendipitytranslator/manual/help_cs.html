@@ -81,6 +81,8 @@ Pokud z nìjakého dùvodu nejsou soubory porovnány a tabulka s pluginy ukazuje nìc
 <ul>
 <li>dvojklik na øádek s pluginem, pøípadnì vybrat øádku a "enter" - otevøe pøekládací okno</li>
 
+<li>Kliknutí pravým tlaèítkem zobrazí informace o pluginu a seznam souborù, které se používají k pøekladu pluginu.</li>
+
 <li>sloupec "Type":
    <ol>
    <li>system - systémový soubor, soubor s hlavními jazykovými zprávami pro serendipity</li>
@@ -196,6 +198,11 @@ Typy protokolù:
 <li>Soubor, který již má pøedchùdce, tedy pokud upravujeme existující pøeklad, má stejné øazení a formátování jako již existující soubor. Èásti, které se nemìní, jsou v obou souborech totožné. Novì pøeložené zprávy jsou pøidány na konec souboru. Snaha je o zachování stejného formátu (zvláštì zarovnání, znaky mezi definicí klíèe a textem ve funkci @define).</li>
 </ul>
 
+<h3>Kontrola syntaxe</h3>
+<p>
+    Pokud máte nainstalované php (tedy pokud ho lze spustit pøes pøíkazovou øádku napø. pøíkazem "php -l jmenosouboru.php"), pak je mu pøedán každý ukládaný soubor ke kontrole syntaxe. Jste tak varováni vždy, když vytvoøíte nevalidní php kód, který by mohl pøípadnì shodit celý blog.
+</p>
+
 <a name="export_to_zip"></a>
 <h3>Export do zip archivu</h3>
 <ul>
@@ -218,7 +225,7 @@ Tento program poskytuji svìtu pod BSD licencí, jejíž text následuje:
 </p>
 <hr />
 
-Copyright © 2009, Vladimír Ajgl. Všechna práva vyhrazena. 
+Copyright © 2012, Vladimír Ajgl. Všechna práva vyhrazena. 
 <p>
 Redistribuce a použití zdrojových i binárních forem díla, v pùvodním i upravovaném tvaru, jsou povoleny za následujících podmínek:
 </p>
@@ -282,6 +289,14 @@ Vylepšeno - stahování pomocí git protokolu. Nyní je plnì použitelné - umí si zal
 Zmìnìno - dialog s prùbìhem stahování byl zrušeno, pruh s prùbìhem byl integrován do hlavního okna a nyní zobrazuje i prùbìh dalších operací jako je získávání seznamu pluginù nebo porovnávání souborù v pluginech.<br />
 Vylepšeno - git html protokol. Nyní jsou už stahovány soubory z posledního commitu. Nicménì je doporuèeno používat výchozí nastavení a pøistupovat ke githubu pøes nativní git protokol.<br />
 Zmìnìno - použitá knihovna jgit byla aktualizována na nejnovìjší verzi.
+</li>
+
+<li><b>2.2</b> - dosud nevydáno<br />
+Opraveno - špatné zaøazování pluginù do kategorií (jádro/externí; plugin/šablona)<br />
+Opraveno - špatné zaøazování do adresáøù pøi exportu do ZIP souboru<br />
+Pøidáno - splash screen pøi startu aplikace<br />
+Pøidáno - kontrola syntaxe pomocí externího php parseru<br />
+Pøidáno - zobrazení informací o pluginu a seznamu souborù pluginu po kliknutí pravým tlaèítkem na øádku s pluginem v tabulce pluginù
 </li>
 </ul>
 

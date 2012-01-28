@@ -109,35 +109,37 @@ public class GitProtocolRepository extends AbstractUpdatableRepository {
             
             // go through required tree and find dates of last commit for each file
             while (tree.next() && !tree.isPostChildren()) {
-                //System.out.println("tree "+tree.getPathString()+"; postchildren = "+tree.isPostChildren());
-                firstMissing = 0;
-                missing = false;
-                for (i = 1; i < size ; i++) {
-                    j = i-1;
-                    missing = (tree.getFileMode(i) == FileMode.MISSING);
-                    if (missing && firstMissing == 0) {
-                        firstMissing = i;
+                if (tree.getFileMode(0) != FileMode.MISSING) {
+                    //System.out.println("tree "+tree.getPathString()+"; postchildren = "+tree.isPostChildren());
+                    firstMissing = 0;
+                    missing = false;
+                    for (i = 1; i < size ; i++) {
+                        j = i-1;
+                        missing = (tree.getFileMode(i) == FileMode.MISSING);
+                        if (missing && firstMissing == 0) {
+                            firstMissing = i;
+                        }
+                        if (firstMissing != 0 && !missing) {
+                            firstMissing = 0;
+                        }
+                        if (!tree.idEqual(0, i) && !missing) {
+                            break;
+                        }
                     }
-                    if (firstMissing != 0 && !missing) {
-                        firstMissing = 0;
+                    //System.out.println("i = " + i+ "; tree = " + tree.getPathString() + "; " +tree.isPostChildren()+ "; " +tree.isPostOrderTraversal()+ "; " +tree.isSubtree());
+                    if (i==size && missing) {
+                        j = firstMissing-1;
+                        //System.out.println(tree.getNameString() + " only initial commit");
                     }
-                    if (!tree.idEqual(0, i) && !missing) {
-                        break;
+                    if (i==size && !missing) {
+                        j = size-1;
+                        //System.out.println(tree.getNameString() + " set on first commit and then never changed");
                     }
+
+                    //System.out.println(tree.getNameString() + " - "+ j +" - " + tree.idEqual(0, j) + "; "+tree.getObjectId(0)+ "; "+tree.getObjectId(j) + "; "+tree.getFileMode(j));
+                    filelist.add(new SerendipityFileInfo(tree.getNameString(),commitDates[j]));
+                    //lastCommit.getCommitTime()*1000l
                 }
-                //System.out.println("i = " + i+ "; tree = " + tree.getPathString() + "; " +tree.isPostChildren()+ "; " +tree.isPostOrderTraversal()+ "; " +tree.isSubtree());
-                if (i==size && missing) {
-                    j = firstMissing-1;
-                    //System.out.println(tree.getNameString() + " only initial commit");
-                }
-                if (i==size && !missing) {
-                    j = size-1;
-                    //System.out.println(tree.getNameString() + " set on first commit and then never changed");
-                }
-                
-                //System.out.println(tree.getNameString() + " - "+ j +" - " + tree.idEqual(0, j) + "; "+tree.getObjectId(0)+ "; "+tree.getObjectId(j) + "; "+tree.getFileMode(j));
-                filelist.add(new SerendipityFileInfo(tree.getNameString(),commitDates[j]));
-                //lastCommit.getCommitTime()*1000l
             }
             
             filelists.put(folderPath, filelist);
@@ -256,6 +258,7 @@ public class GitProtocolRepository extends AbstractUpdatableRepository {
                 
                 repoUpdated = true;
                 System.out.println("End of git updateRepository()");
+                Logger.getLogger(this.getClass().getName()).log(Level.INFO, "update of repository {0} finished", getRepositoryFolderName());                
             }
     }
 
@@ -309,12 +312,13 @@ public class GitProtocolRepository extends AbstractUpdatableRepository {
                 //System.out.println(tree.getNameString() + "; subtree = "+tree.isSubtree());
                 if (tree.isSubtree()) {
                     Plugin p = new Plugin(tree.getNameString(), language);
-                    if (folderPath.contains("plugins")) {
+                    if (p.getName().equals("homepage")) {
+                        System.out.println("Homepage plugin: type = " + p.getType() + "; folderPath = "+folderPath);
+                    }
+                    if (getRemoteURL().contains("plugins") || folderPath.contains("plugins")) {
                         if (p.getType().equals(PluginType.template)) {
                             p.setType(PluginType.event);
                         }
-                    } else {
-                        p.setType(PluginType.template);
                     }
                     p.setRepository(this);
                     if (folderPath.length()>0) {

@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.HashMap;
 import javax.swing.JOptionPane;
 import javax.swing.table.AbstractTableModel;
+import serendipitytranslator.mainWindow.Plugin;
 
 /**
  *
@@ -126,8 +127,8 @@ public class TranslateTableModel extends AbstractTableModel {
 
 
 
-    public void setPluginAndLanguage(String folderPath, String pluginName, String language) throws FileNotFoundException {
-        english = new LangFile(folderPath, pluginName, "en");
+    public void setPluginAndLanguage(Plugin plugin, String language) throws FileNotFoundException {
+        english = new LangFile(plugin, "en");
         if (!english.exists()) {
             throw new FileNotFoundException("English file not found, nothing to translate.");
         }
@@ -137,12 +138,12 @@ public class TranslateTableModel extends AbstractTableModel {
         boolean newKeysAdded = false;
         SimpleDateFormat shortDateFormat = new SimpleDateFormat("yyyy/MM/dd");
 
-        LangFile downloadedFile = new LangFile(folderPath,pluginName, language);
-        LangFile translatedFile = new LangFile(LangFile.LOCATIONS_TRANSLATED,pluginName, language);
+        LangFile downloadedFile = new LangFile(plugin, language);
+        LangFile translatedFile = new LangFile(LangFile.LOCATIONS_TRANSLATED,plugin, language);
 
         if (!downloadedFile.exists()) {
             //System.out.println("downloaded file does not exist.");
-            localLang = new LangFile(folderPath, pluginName, language);
+            localLang = new LangFile(plugin, language);
             localLang.setKeysStructure(english.getFileStructure());
             if (translatedFile.exists()) {
                 for (String key: translatedFile.getKeys()) {

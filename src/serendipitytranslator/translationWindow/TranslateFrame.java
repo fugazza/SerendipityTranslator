@@ -25,6 +25,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableCellEditor;
+import serendipitytranslator.mainWindow.Plugin;
 
 /**
  *
@@ -32,9 +33,10 @@ import javax.swing.table.TableCellEditor;
  */
 public class TranslateFrame extends javax.swing.JFrame {
 
-    TranslateTableModel tableModel = new TranslateTableModel();
+    private TranslateTableModel tableModel = new TranslateTableModel();
     private HashMap<String,String> messageDatabase = null;
-    String pluginName = "";
+    private Plugin plugin = null;
+    
     /** Creates new form TranslateFrame */
     public TranslateFrame() {
         initComponents();
@@ -282,7 +284,7 @@ public class TranslateFrame extends javax.swing.JFrame {
             tableModel.saveLocal();
             tableModel.updateOriginal();
 
-            firePropertyChange("file_saved", "", pluginName);
+            firePropertyChange("file_saved", "", plugin.getName());
         }
     }//GEN-LAST:event_saveButtonActionPerformed
 
@@ -314,18 +316,18 @@ public class TranslateFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_localAreaKeyPressed
 
-    public void setPluginAndLanguage(String folderPath, String pluginName, String language) throws FileNotFoundException {
-        this.pluginName = pluginName;
+    public void setPluginAndLanguage(Plugin plugin, String language) throws FileNotFoundException {
+        this.plugin = plugin;
 
         if (messageDatabase != null) {
             tableModel.setMessageDatabase(messageDatabase);
         }
-        tableModel.setPluginAndLanguage(folderPath, pluginName, language);
+        tableModel.setPluginAndLanguage(plugin, language);
         if (tableModel.getRowCount() > 0) {
             translateTable.setRowSelectionInterval(0, 0);
         }
 
-        setTitle(pluginName + ": Translate serendipity language file");
+        setTitle(plugin.getName() + ": Translate serendipity language file");
     }
 
     public void setTranslatorName(String name) {

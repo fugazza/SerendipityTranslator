@@ -18,6 +18,7 @@ import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import serendipitytranslator.mainWindow.Plugin;
 import serendipitytranslator.mainWindow.PluginType;
 
@@ -31,7 +32,7 @@ public class LangFile {
     public static final int LOCATIONS_TRANSLATED = 2;
 
     private File file = null;
-    private String pluginName;
+    private Plugin plugin;
     private String language;
     private HashMap<String,String> definitions = new HashMap<String,String>();
     private ArrayList<LangFileElement> fileStructure = new ArrayList<LangFileElement>();
@@ -45,35 +46,13 @@ public class LangFile {
     private String betweenString = ", ";
     private int betweenPadding = 0;
 
-    public static String getTranslatedDirName(String pluginName) {
-        Plugin p = new Plugin(pluginName, "cs");
-        String dirname;
-        String basedir = "plugins_translated/";
-        if (p.getType().equals(PluginType.system)) {
-            dirname = basedir + pluginName;
-        } else if (p.getType().equals(PluginType.template) && p.isIntern()) {
-            dirname = basedir + "core_templates/" + pluginName;
-        } else if (p.getType().equals(PluginType.template) && !p.isIntern()) {
-            dirname = basedir + "spartacus_templates/" + pluginName;
-        } else if (p.isIntern()) {
-            dirname = basedir + "core/" + pluginName;
-        } else {
-            dirname = basedir + "spartacus/" + pluginName;
-        }
-        return dirname;
-    }
-
-    public static String getDownloadDirName(String pluginName) {
-        return "plugins/" + pluginName;
-    }
-
-    public static String getFolderFromLocation(int location, String pluginName) {
+    public static String getFolderFromLocation(int location, Plugin plugin) {
         switch (location) {
             case LOCATIONS_TRANSLATED:
-                return getTranslatedDirName(pluginName);
+                return plugin.getTranslatedDirName();
             case LOCATION_PLUGINS:
             default:
-                return getDownloadDirName(pluginName);
+                return plugin.getFolder();
         }        
     }
     
@@ -82,31 +61,30 @@ public class LangFile {
         if (pluginName.equals("system")) {
             fileName = "serendipity_lang_"+language+".inc.php";
         }
-
+        //System.out.println(folderPath+"/"+fileName);
         return new File(folderPath+"/"+fileName);
     }
 
-    public LangFile(String pluginName, String language) {
-        this(LOCATION_PLUGINS, pluginName, language);
+    public LangFile(Plugin plugin, String language) {
+        this(LOCATION_PLUGINS, plugin, language);
     }
 
-    public LangFile(int location, String pluginName, String language) {
-        this(getFolderFromLocation(location, pluginName),pluginName, language);
+    public LangFile(int location, Plugin plugin, String language) {
+        this(getFolderFromLocation(location, plugin),plugin, language);
     }
 
-    public LangFile(String pathToPlugin, String pluginName, String language) {
-        this.pluginName = pluginName;
+    public LangFile(String pathToPlugin, Plugin plugin, String language) {
+        this.plugin = plugin;
         this.language = language;
         
-        this.file = getFile(pathToPlugin,pluginName, language);
+        this.file = getFile(pathToPlugin,plugin.getName(), language);
         //System.out.println("plugin: " + pluginName);
         parseFile();
     }
-    
-    private String getTranslatedDirName() {
-        return getTranslatedDirName(pluginName);
-    }
 
+    public static String getOldDownloadDirName(String pluginName) {
+        return "plugins/" + pluginName;
+    }    
     private void parseFile() {
         //System.out.println("Language file parsing: " + file.getName());
         if (file != null && file.exists()) {
@@ -408,11 +386,11 @@ public class LangFile {
 
     private void __save() {
 
-        String dirname = getTranslatedDirName();
+        String dirname = plugin.getTranslatedDirName();
 
         String UTFdirname = dirname + "/UTF-8";
         String fileName = "lang_" + language + ".inc.php";
-        if (pluginName.equals("system")) {
+        if (plugin.getName().equals("system")) {
             fileName = "serendipity_lang_"+language+".inc.php";
         }
 
@@ -445,7 +423,7 @@ public class LangFile {
                         String prefix = lfe.getPrefix();
                         String between = lfe.getBetween();
                         String value = definitions.get(key);
-                        if (pluginName.equals("system") && isSystemHandledKey(key)) {
+                        if (plugin.getName().equals("system") && isSystemHandledKey(key)) {
                             //sw.write("@define('"+key+"',\t\t'"+getSystemKeyValue(key)+"');\r\n");
                             //swUTF.write("@define('"+key+"',\t\t'"+getUTFSystemKeyValue(key)+"');\r\n");
                             sw.write(prefix+"@define('"+key+"'"+makeBetween(lfe)+"'"+getSystemKeyValue(key)+"');");
@@ -512,8 +490,14 @@ public class LangFile {
             }
             fwUTF.close();
 
+            PhpParser.checkByExternalParser(localEncodingFile);
+            PhpParser.checkByExternalParser(translatedFile);
         } catch (IOException ex) {
-            Logger.getLogger(LangFile.class.getName()).log(Level.SEVERE, null, ex);
+            if (ex.getMessage().startsWith("parser error:")) {
+                JOptionPane.showMessageDialog(null, "There are errors in php code of saved file. Please check the file manually and remove the error.\r\n" + ex.getMessage(), "External php parser error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                Logger.getLogger(LangFile.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 
@@ -781,9 +765,9 @@ public class LangFile {
 
     @Override
     public LangFile clone() {
-        LangFile lf = new LangFile(pluginName,language);
+        LangFile lf = new LangFile(plugin,language);
         lf.file = this.file;
-        lf.pluginName = this.pluginName;
+        lf.plugin = this.plugin;
         lf.language = this.language;
         lf.definitions = (HashMap<String,String>) this.definitions.clone();
         lf.fileStructure = (ArrayList<LangFileElement>) this.fileStructure.clone();

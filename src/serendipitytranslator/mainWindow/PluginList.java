@@ -334,7 +334,7 @@ public class PluginList extends ArrayList<Plugin> {
                         plugin.setFolderInRepository(name);
                     }
 
-                    //System.out.println("plugin " + name + ": intern = " + plugin.isIntern());
+                    //System.out.println("plugin " + name + ": intern = " + plugin.isIntern() + "; type = " + plugin.getType());
                     plugins.add(plugin);
                 }
             }
