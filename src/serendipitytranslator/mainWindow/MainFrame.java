@@ -56,7 +56,7 @@ public class MainFrame extends javax.swing.JFrame implements PropertyChangeListe
     private SettingsDialog settingsDialog = new SettingsDialog(this, true);
     private HashMap<String,String> messageDatabase = null;
     private String language;
-    private String version = "2.1";
+    private String version = "2.2";
     private PluginDownloader pluginDownloader;
     private ExecutorService executorService;
     final static Logger l = Logger.getLogger("serendipitytranslator");

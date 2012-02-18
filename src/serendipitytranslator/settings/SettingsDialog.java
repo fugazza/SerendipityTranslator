@@ -19,10 +19,10 @@ import java.io.*;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import serendipitytranslator.mainWindow.MainFrame;
 import serendipitytranslator.repositories.*;
+import serendipitytranslator.translationWindow.LangFile;
 
 /**
  *
@@ -54,6 +54,7 @@ public class SettingsDialog extends javax.swing.JDialog {
     private void initComponents() {
 
         jFileChooser1 = new javax.swing.JFileChooser();
+        lineBreakButtonGroup = new javax.swing.ButtonGroup();
         langComboBox = new javax.swing.JComboBox();
         jLabel1 = new javax.swing.JLabel();
         translatorTextField = new javax.swing.JTextField();
@@ -87,6 +88,10 @@ public class SettingsDialog extends javax.swing.JDialog {
         themesFolderTextField = new javax.swing.JTextField();
         themesBrowseButton = new javax.swing.JButton();
         resetButton = new javax.swing.JButton();
+        jLabel13 = new javax.swing.JLabel();
+        jLabel14 = new javax.swing.JLabel();
+        unixRadioButton = new javax.swing.JRadioButton();
+        windowsRadioButton = new javax.swing.JRadioButton();
 
         jFileChooser1.setDialogTitle("Choose directory");
         jFileChooser1.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY);
@@ -163,7 +168,7 @@ public class SettingsDialog extends javax.swing.JDialog {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(externPluginsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(externPluginsTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE))
+                    .addComponent(externPluginsTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -215,7 +220,7 @@ public class SettingsDialog extends javax.swing.JDialog {
                     .addComponent(jLabel3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(coreUrlTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)
+                    .addComponent(coreUrlTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(coreTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE))
@@ -281,7 +286,7 @@ public class SettingsDialog extends javax.swing.JDialog {
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addComponent(externThemesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(externThemesTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))
+                    .addComponent(externThemesTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -308,6 +313,27 @@ public class SettingsDialog extends javax.swing.JDialog {
             }
         });
 
+        jLabel13.setText("Style of line breaks:");
+
+        jLabel14.setText("Plugins without language file:");
+
+        lineBreakButtonGroup.add(unixRadioButton);
+        unixRadioButton.setSelected(true);
+        unixRadioButton.setText("Unix (\\n)");
+        unixRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                unixRadioButtonActionPerformed(evt);
+            }
+        });
+
+        lineBreakButtonGroup.add(windowsRadioButton);
+        windowsRadioButton.setText("Windows (\\r\\n)");
+        windowsRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                windowsRadioButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -315,14 +341,6 @@ public class SettingsDialog extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addGap(18, 18, 18)
-                        .addComponent(translatorTextField))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel9)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(updateURLTextField))
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -331,13 +349,30 @@ public class SettingsDialog extends javax.swing.JDialog {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(resetButton))
                     .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addGap(40, 40, 40)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(problemPluginsCheckBox)
+                            .addComponent(translatorTextField)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel2)
-                                .addGap(30, 30, 30)
-                                .addComponent(langComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                                .addComponent(langComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel14)
+                            .addComponent(jLabel13))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(unixRadioButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(windowsRadioButton))
+                            .addComponent(problemPluginsCheckBox))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel9)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(updateURLTextField)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -351,8 +386,15 @@ public class SettingsDialog extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(translatorTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(problemPluginsCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(problemPluginsCheckBox)
+                    .addComponent(jLabel14))
+                .addGap(3, 3, 3)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel13)
+                    .addComponent(unixRadioButton)
+                    .addComponent(windowsRadioButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(updateURLTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -415,6 +457,14 @@ public class SettingsDialog extends javax.swing.JDialog {
         setDefaults();
     }//GEN-LAST:event_resetButtonActionPerformed
 
+    private void unixRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unixRadioButtonActionPerformed
+        LangFile.setLineBreakStyle(LangFile.UNIX_BRAKE);
+    }//GEN-LAST:event_unixRadioButtonActionPerformed
+
+    private void windowsRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_windowsRadioButtonActionPerformed
+        LangFile.setLineBreakStyle(LangFile.WINDOWS_BRAKE);
+    }//GEN-LAST:event_windowsRadioButtonActionPerformed
+
     private void setDefaults() {
         updateURLTextField.setText("http://vlada.ajgl.cz/serendipity_translator");
         coreTypeComboBox.setSelectedIndex(3);
@@ -422,7 +472,8 @@ public class SettingsDialog extends javax.swing.JDialog {
         externPluginsComboBox.setSelectedIndex(3);
         externPluginsTextField.setText("git://github.com/s9y/additional_plugins.git");
         externThemesComboBox.setSelectedIndex(3);
-        externThemesTextField.setText("git://github.com/s9y/additional_themes.git");
+        externThemesTextField.setText("git://github.com/s9y/additional_themes.git");        
+        unixRadioButton.setSelected(true);
     }
     
     public String getLanguage() {
@@ -512,6 +563,16 @@ public class SettingsDialog extends javax.swing.JDialog {
                     if (count==2 && key.equals("externThemesFolder")) {
                         themesFolderTextField.setText(st.nextToken());
                     }
+                    if (count==2 && key.equals("lineBreakStyle")) {
+                        String lbr = st.nextToken();
+                        if (lbr.equals("windows")) {
+                            windowsRadioButton.setSelected(true);
+                            LangFile.setLineBreakStyle(LangFile.WINDOWS_BRAKE);
+                        } else {
+                            unixRadioButton.setSelected(true);
+                            LangFile.setLineBreakStyle(LangFile.UNIX_BRAKE);
+                        }
+                    }
                 }
                 br.close();
             } catch (FileNotFoundException ex) {
@@ -530,6 +591,7 @@ public class SettingsDialog extends javax.swing.JDialog {
             fw.write("language="+getLanguage()+"\r\n");
             fw.write("translator="+getTranslator()+"\r\n");
             fw.write("hideProblems="+(problemPluginsCheckBox.isSelected()? "Y" : "N")+"\r\n");
+            fw.write("lineBreakStyle="+(windowsRadioButton.isSelected()? "windows" : "unix")+"\r\n");
             fw.write("applicationRepository="+updateURLTextField.getText()+"\r\n");
             fw.write("pluginWindowLeft="+mainWindowPosition.x+"\r\n");
             fw.write("pluginWindowTop="+mainWindowPosition.y+"\r\n");
@@ -657,6 +719,8 @@ public class SettingsDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -669,6 +733,7 @@ public class SettingsDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JComboBox langComboBox;
+    private javax.swing.ButtonGroup lineBreakButtonGroup;
     private javax.swing.JButton pluginsBrowseButton;
     private javax.swing.JTextField pluginsFolderTextField;
     private javax.swing.JCheckBox problemPluginsCheckBox;
@@ -676,7 +741,9 @@ public class SettingsDialog extends javax.swing.JDialog {
     private javax.swing.JButton themesBrowseButton;
     private javax.swing.JTextField themesFolderTextField;
     private javax.swing.JTextField translatorTextField;
+    private javax.swing.JRadioButton unixRadioButton;
     private javax.swing.JTextField updateURLTextField;
+    private javax.swing.JRadioButton windowsRadioButton;
     // End of variables declaration//GEN-END:variables
 
 }

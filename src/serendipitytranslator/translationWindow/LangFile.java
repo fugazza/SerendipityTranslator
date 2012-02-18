@@ -20,7 +20,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import serendipitytranslator.mainWindow.Plugin;
-import serendipitytranslator.mainWindow.PluginType;
 
 /**
  *
@@ -30,6 +29,11 @@ public class LangFile {
 
     public static final int LOCATION_PLUGINS = 1;
     public static final int LOCATIONS_TRANSLATED = 2;
+    
+    public static final int WINDOWS_BRAKE = 1;
+    public static final int UNIX_BRAKE = 2;
+
+    private static int lineBreakStyle = UNIX_BRAKE;
 
     private File file = null;
     private Plugin plugin;
@@ -112,7 +116,7 @@ public class LangFile {
 
                     // try to find a header
                     if (!headerRead && statement.trim().startsWith("/**")) {
-                        StringTokenizer st2 = new StringTokenizer(statement, "\r\n");
+                        StringTokenizer st2 = new StringTokenizer(statement, getLineBreak());
                         st2.nextToken();
                         //processing file header
                         while (st2.hasMoreTokens()) {
@@ -151,7 +155,7 @@ public class LangFile {
                         }
                         
                         if (prefix.isEmpty()) {
-                            prefix = "\r\n";
+                            prefix = getLineBreak();
                         }
 
                         st = new StringTokenizer(statement.trim(),"'\"",true);
@@ -171,9 +175,8 @@ public class LangFile {
                                 value += st.nextToken();
                             }
                             value += st.nextToken(); // add trailing delimiter
-                            
-                            value = value.replace("\n", "\r\n");
-                            value = value.replace("\r\r", "\r");
+
+                            value = makeLineEndsConsistent(value);
 
                             definitions.put(key, value);
                             fileStructure.add(new LangFileElement(LangFileElement.KEY, key, prefix, between));
@@ -204,6 +207,14 @@ public class LangFile {
 //        }
     }
 
+    private String getLineBreak() {
+        if (lineBreakStyle == LangFile.WINDOWS_BRAKE) {
+            return "\r\n";
+        } else {
+            return "\n";            
+        }
+    }
+    
     private void checkBetweens() {
         HashMap<String,Integer> betweens = new HashMap<String,Integer>();
         HashMap<Integer,Integer> padCounts = new HashMap<Integer,Integer>();
@@ -285,17 +296,17 @@ public class LangFile {
 
     public void set(String key, String value) {
         if (!definitions.containsKey(key)) {
-            fileStructure.add(new LangFileElement(LangFileElement.KEY,key,"\r\n",", ",true));
+            fileStructure.add(new LangFileElement(LangFileElement.KEY,key,getLineBreak(),", ",true));
         }
         definitions.put(key, value);
     }
 
     public void addBlankLineToStructure() {
-        fileStructure.add(new LangFileElement(LangFileElement.STRING,"\r\n"));
+        fileStructure.add(new LangFileElement(LangFileElement.STRING,getLineBreak()));
     }
 
     public void addCommentToStructure(String comment) {
-        fileStructure.add(new LangFileElement(LangFileElement.STRING,"\r\n// " + comment));
+        fileStructure.add(new LangFileElement(LangFileElement.STRING,getLineBreak()+"// " + comment));
     }
 
     public String get(String key) {
@@ -370,8 +381,12 @@ public class LangFile {
     }
 
     private String makeLineEndsConsistent(String text) {
-        text = text.replaceAll("\r\n", "\n");
-        text = text.replaceAll("\n", "\r\n");
+        if (lineBreakStyle == LangFile.WINDOWS_BRAKE) {
+            text = text.replace("\n", "\r\n");
+            text = text.replace("\r\r", "\r");
+        } else {
+            text = text.replace("\r\n", "\n");
+        }        
         return text;
     }
 
@@ -404,16 +419,16 @@ public class LangFile {
         try {
             SimpleDateFormat longDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             SimpleDateFormat shortDateFormat = new SimpleDateFormat("yyyy/MM/dd");
-            sw.write("<?php # lang_"+language+".inc.php "+version+"."+(subversion+1)+" "+longDateFormat.format(new Date())+" VladaAjgl $\r\n\r\n");
-            sw.write("/**\r\n");
-            sw.write(" *  @version " + version +"." + (subversion+1) + "\r\n");
+            sw.write("<?php # lang_"+language+".inc.php "+version+"."+(subversion+1)+" "+longDateFormat.format(new Date())+" VladaAjgl $"+getLineBreak()+getLineBreak());
+            sw.write("/**"+getLineBreak());
+            sw.write(" *  @version " + version +"." + (subversion+1) + getLineBreak());
             for (LangFileElement lfe: fileStructure) {
                 if (lfe.getType() == LangFileElement.HEADER) {
-                    sw.write(lfe.getLine() + "\r\n");
+                    sw.write(lfe.getLine() + getLineBreak());
                 }
             }
-            sw.write(" *  @author "+authorName + "\r\n");
-            sw.write(" *  " + ((version > 1 || subversion >= 0) ? "@revisionDate" : "@translated") + " "+shortDateFormat.format(new Date()) + "\r\n");
+            sw.write(" *  @author "+authorName + getLineBreak());
+            sw.write(" *  " + ((version > 1 || subversion >= 0) ? "@revisionDate" : "@translated") + " "+shortDateFormat.format(new Date()) + getLineBreak());
             sw.write(" */");
             swUTF.write(sw.toString()); // header is the same for local encoding and utf file
             for (LangFileElement lfe: fileStructure) {
@@ -424,12 +439,12 @@ public class LangFile {
                         String between = lfe.getBetween();
                         String value = definitions.get(key);
                         if (plugin.getName().equals("system") && isSystemHandledKey(key)) {
-                            //sw.write("@define('"+key+"',\t\t'"+getSystemKeyValue(key)+"');\r\n");
-                            //swUTF.write("@define('"+key+"',\t\t'"+getUTFSystemKeyValue(key)+"');\r\n");
+                            //sw.write("@define('"+key+"',\t\t'"+getSystemKeyValue(key)+"');"+getLineBreak());
+                            //swUTF.write("@define('"+key+"',\t\t'"+getUTFSystemKeyValue(key)+"');"+getLineBreak());
                             sw.write(prefix+"@define('"+key+"'"+makeBetween(lfe)+"'"+getSystemKeyValue(key)+"');");
                             swUTF.write(prefix+"@define('"+key+"'"+makeBetween(lfe)+"'"+getUTFSystemKeyValue(key)+"');");
                         } else if (value.trim().length() > 0) {
-                            //String row = "@define('"+key+"',\t\t"+definitions.get(key)+");\r\n";
+                            //String row = "@define('"+key+"',\t\t"+definitions.get(key)+");"+getLineBreak();
                             String row = prefix+"@define('"+key+"'"+makeBetween(lfe)+value+");";
                             sw.write(row);
                             swUTF.write(row);
@@ -437,7 +452,7 @@ public class LangFile {
                         break;
                     case LangFileElement.STRING:
                     case LangFileElement.STATEMENT:
-                        String row = lfe.getLine();// + "\r\n";
+                        String row = lfe.getLine();// + getLineBreak();
                         sw.write(row);
                         swUTF.write(row);
                         break;
@@ -778,6 +793,9 @@ public class LangFile {
         return lf;
     }
 
+    public static void setLineBreakStyle(int lineBreakStyle) {
+        LangFile.lineBreakStyle = lineBreakStyle;
+    }
 
 
 }
