@@ -22,3 +22,5 @@
 /pluginDatabse_cn.xml
 /error.log.lck
 /plugins_translated/
+/build/
+/dist/

@@ -127,7 +127,11 @@ public class LangFile {
                                    String token = st.nextToken();
                                    try {
                                        version = Integer.parseInt(token);
-                                       subversion = Integer.parseInt(st.nextToken());
+                                       if (st.hasMoreTokens()) {
+                                           subversion = Integer.parseInt(st.nextToken());
+                                       } else {
+                                           subversion = 0;
+                                       }                                       
                                        break;
                                    } catch (NumberFormatException e) {
                                        // continue without taking care

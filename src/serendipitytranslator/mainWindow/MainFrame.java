@@ -920,18 +920,22 @@ public class MainFrame extends javax.swing.JFrame implements PropertyChangeListe
 
             @Override
             protected Void doInBackground() throws Exception {
+//                System.out.println("Started to COMPARE plugins");
                 firePropertyChange("workStarted",null,"Comparison of plugins started");
+//                System.out.println("set progress Max");
                 firePropertyChange("progressMax",null,plugins.size());
+//                System.out.println("Before comparison.");
                 //JOptionPane.showMessageDialog(null, "Before comparison.");
                 int i = 0;
                 for (Plugin p: plugins) {
+//                    System.out.println("comparison of plugin " + p.getName() + " started");
                     if (Thread.interrupted()) {
                         break;
                     }
                     //auto-correct folders from previous versions
                     File oldFolder = new File(LangFile.getOldDownloadDirName(p.getName()));
                     File newFolder = new File(p.getFolder());
-                    //System.out.println(oldFolder.getAbsolutePath() + " should be renamed to " + newFolder.getAbsolutePath());
+//                    System.out.println(oldFolder.getAbsolutePath() + " should be renamed to " + newFolder.getAbsolutePath());
                     if (oldFolder.exists() && !newFolder.equals(oldFolder)) {
                         try {
                             if (!newFolder.exists()) {
@@ -946,9 +950,9 @@ public class MainFrame extends javax.swing.JFrame implements PropertyChangeListe
                                 }
                                 oldFolder.delete();
                             }                           
-                            //System.out.println("good");
+//                            System.out.println("good");
                         } catch (IOException ex) {
-                            //System.out.println("error");
+//                            System.out.println("error");
                             Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
                         }
                         //boolean result = oldFolder.renameTo(newFolder);
@@ -956,15 +960,23 @@ public class MainFrame extends javax.swing.JFrame implements PropertyChangeListe
 
                     // compare files, if they exist
                     //File enFile = LangFile.getFile(p.getFolder(),p.getName(),"en");
+//                    System.out.println("before comparing of plugin " + p.getName() + " itself");
                     //if (enFile.exists()) {
+                    try {
                         p.compareFiles();
+                    } catch (Exception e) {
+                        Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, e);
+                        e.printStackTrace();
+                    }
                     //}
+//                    System.out.println("before firing properties");
                     firePropertyChange("progressValue",i, ++i);
                     firePropertyChange("progressText",null, "comparing "+i+"/"+plugins.size());
                     progressBar.setString("comparing "+i+"/"+plugins.size()+"");
+//                    System.out.println("plugin " + p.getName() + " compared");
                     //JOptionPane.showMessageDialog(null, "plugin " + p.getName());
                 }
-                //JOptionPane.showMessageDialog(null, "After comparison. " + i);
+//                JOptionPane.showMessageDialog(null, "After comparison. " + i);
                 firePropertyChange("workFinished",null, plugins);
                 return null;
             }
@@ -973,6 +985,7 @@ public class MainFrame extends javax.swing.JFrame implements PropertyChangeListe
             protected void done() {
                 super.done();
                 pluginTable.getRowSorter().modelStructureChanged();
+//                System.out.println("COMPARISON done!");
             }
             
         };
@@ -1376,6 +1389,7 @@ public class MainFrame extends javax.swing.JFrame implements PropertyChangeListe
             int max = (Integer) evt.getNewValue();
             if (max > 0) {
                 progressBar.setIndeterminate(false);
+                progressBar.setValue(0);
                 progressBar.setMaximum(max);
             } else {
                 progressBar.setIndeterminate(true);

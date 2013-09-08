@@ -57,24 +57,28 @@ public class PluginList extends ArrayList<Plugin> {
         SimpleFileRepository pluginsRepository = settings.getPluginsRepository();
         SimpleFileRepository themesRepository = settings.getThemesRepository();
         
+        System.out.println("checking, if download is required");
         boolean downloadsRequired = coreRepository.isUpdatable() || pluginsRepository.isUpdatable() || themesRepository.isUpdatable();
+        System.out.println("downloads required = " + downloadsRequired + "; now checking internet connection");
         boolean internetAvailable = ajglTools.checkInternetConnection();
         if (!internetAvailable) {
             JOptionPane.showMessageDialog(null, "You are not connected to internet, plugin list can not be downloaded!","Internet connection failed",JOptionPane.WARNING_MESSAGE);
+        } else {
+            System.out.println("Connection checked and works.");
         }
         
         if (!downloadsRequired || internetAvailable) {
             propertyChange.firePropertyChange("workStarted", null, "Download of list of plugins started.");
-            //System.out.println("Connection works, now the download begins.");
+            System.out.println("Connection works, now the download begins.");
             clear();
 
-            //System.out.println("System file will be added.");
+            System.out.println("System file will be added.");
             Plugin systemLangFile = new Plugin("system",language);
             systemLangFile.setRepository(coreRepository);
             systemLangFile.setFolderInRepository("lang");
             add(systemLangFile);
 
-            //System.out.println("Internals will be loaded.");
+            System.out.println("Internals will be loaded.");
             boolean coreRepAvailable = true;
             if (coreRepository instanceof AbstractHTMLRepository
                     && !((AbstractHTMLRepository) coreRepository).isAvailable()) {
@@ -88,7 +92,7 @@ public class PluginList extends ArrayList<Plugin> {
                 JOptionPane.showMessageDialog(null, "Core server ("+settings.getCoreUrl()+") is not accessible."+'\r'+'\n'+"Internal plugins cannot be updated.", "Core server error", JOptionPane.WARNING_MESSAGE);
             }
 
-            //System.out.println("External plugins be loaded.");
+            System.out.println("External plugins be loaded.");
             boolean pluginRepAvailable = true;
             if (pluginsRepository instanceof AbstractHTMLRepository
                     && !((AbstractHTMLRepository) pluginsRepository).isAvailable()) {
@@ -101,7 +105,7 @@ public class PluginList extends ArrayList<Plugin> {
                 JOptionPane.showMessageDialog(null, "Server with external plugins ("+settings.getExternPluginsUrl()+") is not accessible."+'\r'+'\n'+"External plugins cannot be updated.", "Plugins server error", JOptionPane.WARNING_MESSAGE);
             }
 
-            //System.out.println("External themes will be loaded.");
+            System.out.println("External themes will be loaded.");
             boolean themesRepAvailable = true;
             if (themesRepository instanceof AbstractHTMLRepository) {
                 if (ajglTools.checkInternetConnection(settings.getExternThemesUrl())) {

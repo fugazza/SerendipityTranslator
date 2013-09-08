@@ -210,7 +210,8 @@ public class JGitTest {
     @Test
     public void jGitTest6() {
         try {
-            String repoFolderName = "C:/Cvs/php-blog/pluginsTryout";
+//            String repoFolderName = "C:/Cvs/php-blog/pluginsTryout";
+            String repoFolderName = "pluginsTryout";
             String remoteString = "git://github.com/s9y/Serendipity.git";
             File workingFolder = new File(repoFolderName);
             File gitFolder = new File(repoFolderName + "/.git");

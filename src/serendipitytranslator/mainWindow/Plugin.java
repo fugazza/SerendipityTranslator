@@ -189,13 +189,13 @@ public final class Plugin implements Comparator {
      * Also Documentation files are compared.
      */
     public void compareFiles() {
-        //JOptionPane.showMessageDialog(null, "before downloaded file");
+//        System.out.println(name +": before downloaded file");
         LangFile downloadedLocFile = new LangFile(this,language);
-        //JOptionPane.showMessageDialog(null, "before translated file");
+//        System.out.println(name +": before translated file");
         LangFile translatedLocFile = new LangFile(LangFile.LOCATIONS_TRANSLATED,this,language);
-        //JOptionPane.showMessageDialog(null, "before english file");
+//        System.out.println(name +": before english file");
         LangFile enFile = new LangFile(this,"en");
-        //JOptionPane.showMessageDialog(null, "after english file");
+//        System.out.println(name +": after english file");
 
         enCount = enFile.getKeysCount();
         locCount = downloadedLocFile.getKeysCount();
