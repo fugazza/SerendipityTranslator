@@ -219,14 +219,14 @@ public class GitProtocolRepository extends AbstractUpdatableRepository {
                 JGitProgressMonitor monitor = new JGitProgressMonitor(getRepositoryFolderName().substring(getRepositoryFolderName().lastIndexOf("/")+1));
                 monitor.setPropertyChange(propertyChange);
                 pull.setProgressMonitor(monitor);
-//                System.out.println("Pull will be started for repo " + workingFolder);
+                System.out.println("Pull will be started for repo " + workingFolder);
                 PullResult pr = pull.call();                        
-//                System.out.println("Pull ended. was successfull? - " +pr.isSuccessful());
-//                System.out.println("pull result string = " + pr.toString());
-//                System.out.println("fetched from = " + pr.getFetchedFrom());
-//                System.out.println("fetch result = " + pr.getFetchResult());
-//                System.out.println("merge result = " + pr.getMergeResult());
-//                System.out.println("rebase result = " + pr.getRebaseResult());
+                System.out.println("Pull ended. was successfull? - " +pr.isSuccessful());
+                System.out.println("pull result string = " + pr.toString());
+                System.out.println("fetched from = " + pr.getFetchedFrom());
+                System.out.println("fetch result = " + pr.getFetchResult());
+                System.out.println("merge result = " + pr.getMergeResult());
+                System.out.println("rebase result = " + pr.getRebaseResult());
                 
                 repoUpdated = true;
                 System.out.println("End of git updateRepository()");
@@ -308,6 +308,8 @@ public class GitProtocolRepository extends AbstractUpdatableRepository {
         } catch (IOException | WrongRepositoryStateException | InvalidConfigurationException | DetachedHeadException | InvalidRemoteException | CanceledException | RefNotFoundException | NoHeadException ex) {
             Logger.getLogger(GitProtocolRepository.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
