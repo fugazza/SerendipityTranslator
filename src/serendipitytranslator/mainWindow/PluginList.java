@@ -60,6 +60,7 @@ public class PluginList extends ArrayList<Plugin> {
         System.out.println("checking, if download is required");
         boolean downloadsRequired = coreRepository.isUpdatable() || pluginsRepository.isUpdatable() || themesRepository.isUpdatable();
         System.out.println("downloads required = " + downloadsRequired + "; now checking internet connection");
+        propertyChange.firePropertyChange("workStarted", null, "Checking internet connection.");
         boolean internetAvailable = ajglTools.checkInternetConnection();
         if (!internetAvailable) {
             JOptionPane.showMessageDialog(null, "You are not connected to internet, plugin list can not be downloaded!","Internet connection failed",JOptionPane.WARNING_MESSAGE);

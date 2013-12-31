@@ -32,7 +32,7 @@ public class PluginDownloader implements Runnable {
     public void run() {
         int count = 0;
         
-        propertyChange.firePropertyChange("workStarted", null, "Download of plugins started.");
+        propertyChange.firePropertyChange("workStarted", null, "Download of plugins started - checking internet connetion.");
         if (ajglTools.checkInternetConnection()) {
                 for (Plugin plugin : pluginList) {
                     if (stop || Thread.interrupted()) {

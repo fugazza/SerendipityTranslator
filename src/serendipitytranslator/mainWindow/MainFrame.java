@@ -12,8 +12,11 @@
 package serendipitytranslator.mainWindow;
 
 import ajgl.utils.ajglTools;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.UserInfo;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.GridLayout;
 import java.awt.SplashScreen;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -36,11 +39,22 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipOutputStream;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.RowFilter;
 import javax.swing.RowFilter.Entry;
 import javax.swing.SwingWorker;
 import javax.swing.table.TableRowSorter;
+import org.eclipse.jgit.errors.UnsupportedCredentialItem;
+import org.eclipse.jgit.transport.CredentialItem;
+import org.eclipse.jgit.transport.CredentialsProvider;
+import org.eclipse.jgit.transport.CredentialsProviderUserInfo;
+import org.eclipse.jgit.transport.JschConfigSessionFactory;
+import org.eclipse.jgit.transport.OpenSshConfig;
+import org.eclipse.jgit.transport.SshSessionFactory;
+import org.eclipse.jgit.transport.URIish;
 import serendipitytranslator.settings.SettingsDialog;
 import serendipitytranslator.translationWindow.LangFile;
 import serendipitytranslator.translationWindow.TranslateFrame;
@@ -56,7 +70,7 @@ public class MainFrame extends javax.swing.JFrame implements PropertyChangeListe
     private SettingsDialog settingsDialog = new SettingsDialog(this, true);
     private HashMap<String,String> messageDatabase = null;
     private String language;
-    private String version = "2.2";
+    private String version = "2.3";
     private PluginDownloader pluginDownloader;
     private ExecutorService executorService;
     final static Logger l = Logger.getLogger("serendipitytranslator");
@@ -878,6 +892,53 @@ public class MainFrame extends javax.swing.JFrame implements PropertyChangeListe
             Logger.getLogger(MainFrame.class.getName()).log(Level.INFO, ex.getMessage());
         }
 
+        JschConfigSessionFactory sessionFactory = new JschConfigSessionFactory() {
+            @Override
+            protected void configure(OpenSshConfig.Host hc, Session session) {
+                CredentialsProvider provider = new CredentialsProvider() {
+                    @Override
+                    public boolean isInteractive() {
+                        System.out.println("CredentialProvider: check if interactive");
+                        return false;
+                    }
+
+                    @Override
+                    public boolean supports(CredentialItem... items) {
+                        System.out.println("CredentialProvider: request if next items are supported");
+                        for (CredentialItem ci: items) {
+                            System.out.println("\t\t"+ci.getClass().getName()+"; " + ci.getPromptText() + "; secured = " + ci.isValueSecure());
+                        }
+                        return true;
+                    }
+
+                    @Override
+                    public boolean get(URIish uri, CredentialItem... items) throws UnsupportedCredentialItem {
+                        System.out.println("CredentialProvider: item request for URI: " + uri);
+                        for (CredentialItem item : items) {
+                            System.out.println("\t\t setting item: class = " + item.getClass().getName() + "; prompt = " + item.getPromptText() + "; string = " + item.toString() + "; secure = " + item.isValueSecure());
+                            JPanel userPanel = new JPanel();
+                            JLabel passwordLbl = new JLabel(item.getPromptText());
+                            JPasswordField pf = new JPasswordField();
+                            userPanel.setLayout(new GridLayout(2,1));
+                            userPanel.add(passwordLbl);
+                            userPanel.add(pf);
+                            int okCxl = JOptionPane.showConfirmDialog(null, userPanel, "Set password", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+                            if (okCxl == JOptionPane.OK_OPTION) {
+                              String password = new String(pf.getPassword());
+                              //System.err.println("You entered: " + password);
+                              ((CredentialItem.StringType) item).setValue(password);
+                            }
+                        }
+                        return true;
+                    }
+                };
+                UserInfo userInfo = new CredentialsProviderUserInfo(session, provider);
+                session.setUserInfo(userInfo);
+            }
+        };
+        SshSessionFactory.setInstance(sessionFactory);
+
         updateLanguage();
     }
     
@@ -1411,7 +1472,7 @@ public class MainFrame extends javax.swing.JFrame implements PropertyChangeListe
             cancelButton.setVisible(true);
             progressBar.setString((String) evt.getNewValue());
         } else if (evt.getPropertyName().equals("workFinished")) {
-            progressBar.setIndeterminate(false);
+            //progressBar.setIndeterminate(false);
             progressBar.setVisible(false);
             cancelButton.setVisible(false);
         }

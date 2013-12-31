@@ -38,8 +38,8 @@ public class LangFile {
     private File file = null;
     private Plugin plugin;
     private String language;
-    private HashMap<String,String> definitions = new HashMap<String,String>();
-    private ArrayList<LangFileElement> fileStructure = new ArrayList<LangFileElement>();
+    private HashMap<String,String> definitions = new HashMap<>();
+    private ArrayList<LangFileElement> fileStructure = new ArrayList<>();
     private int version = 1;
     private int subversion = -1;
     private String authorName = "";
@@ -90,6 +90,7 @@ public class LangFile {
         return "plugins/" + pluginName;
     }    
     private void parseFile() {
+        int translationsCount = 0;
         //System.out.println("Language file parsing: " + file.getName());
         if (file != null && file.exists()) {
 
@@ -140,7 +141,14 @@ public class LangFile {
                             } else if (!(line.contains("@author Translator Name <yourmail@example.com>")
                                          || line.contains("*/"))) {
                                 fileStructure.add(new LangFileElement(LangFileElement.HEADER, line));
+                                
+                                if (line.contains("@translated") || line.contains("@revisionDate")) {
+                                    translationsCount++;
+                                }
                             }
+                        }
+                        if (version == 1 && subversion == -1 && translationsCount > 0) {
+                            subversion = (translationsCount-1);
                         }
                         headerRead = true;
                     } else if (statement.trim().startsWith("/*") && headerRead) {
@@ -220,8 +228,8 @@ public class LangFile {
     }
     
     private void checkBetweens() {
-        HashMap<String,Integer> betweens = new HashMap<String,Integer>();
-        HashMap<Integer,Integer> padCounts = new HashMap<Integer,Integer>();
+        HashMap<String,Integer> betweens = new HashMap<>();
+        HashMap<Integer,Integer> padCounts = new HashMap<>();
 
         String between;
         int len;
@@ -289,7 +297,7 @@ public class LangFile {
     }
 
     public ArrayList<String> getKeys() {
-        ArrayList<String> keys = new ArrayList<String>();
+        ArrayList<String> keys = new ArrayList<>();
         for (LangFileElement lfe: fileStructure) {
             if (lfe.getType() == LangFileElement.KEY && !isSystemHandledKey(lfe.getLine())) {
                 keys.add(lfe.getLine());
@@ -363,7 +371,7 @@ public class LangFile {
     }
 
     public void setKeysStructure(ArrayList<LangFileElement> enFileStructure) {
-        ArrayList<LangFileElement> elementsToRemove = new ArrayList<LangFileElement>();
+        ArrayList<LangFileElement> elementsToRemove = new ArrayList<>();
         for (LangFileElement lfe: fileStructure) {
             if (lfe.getType() != LangFileElement.HEADER && lfe.getType() != LangFileElement.STATEMENT) {
                 elementsToRemove.add(lfe);
@@ -423,9 +431,10 @@ public class LangFile {
         try {
             SimpleDateFormat longDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             SimpleDateFormat shortDateFormat = new SimpleDateFormat("yyyy/MM/dd");
-            sw.write("<?php # lang_"+language+".inc.php "+version+"."+(subversion+1)+" "+longDateFormat.format(new Date())+" VladaAjgl $"+getLineBreak()+getLineBreak());
+            //sw.write("<?php # lang_"+language+".inc.php "+version+"."+(subversion+1)+" "+longDateFormat.format(new Date())+" VladaAjgl $"+getLineBreak()+getLineBreak());
+            sw.write("<?php"+getLineBreak()+getLineBreak());
             sw.write("/**"+getLineBreak());
-            sw.write(" *  @version " + version +"." + (subversion+1) + getLineBreak());
+            //sw.write(" *  @version " + version +"." + (subversion+1) + getLineBreak());
             for (LangFileElement lfe: fileStructure) {
                 if (lfe.getType() == LangFileElement.HEADER) {
                     sw.write(lfe.getLine() + getLineBreak());
@@ -549,7 +558,7 @@ public class LangFile {
     }
 
     private static HashMap<String,String> getCharsets() {
-        HashMap<String,String> charsets = new HashMap<String,String>();
+        HashMap<String,String> charsets = new HashMap<>();
         charsets.put("bg", "windows-1251");
         charsets.put("cn", "UTF-8");
         charsets.put("cs", "windows-1250");
@@ -583,7 +592,7 @@ public class LangFile {
     }
 
     private HashMap<String,String> getSqlCharsets() {
-        HashMap<String,String> sqlCharsets = new HashMap<String,String>();
+        HashMap<String,String> sqlCharsets = new HashMap<>();
         sqlCharsets.put("bg", "cp1251");
         sqlCharsets.put("cn", "utf8");
         sqlCharsets.put("cs", "cp1250");
@@ -617,7 +626,7 @@ public class LangFile {
     }
     
     private HashMap<String,String> getDateLocales() {
-        HashMap<String,String> dateLocales = new HashMap<String,String>();
+        HashMap<String,String> dateLocales = new HashMap<>();
         dateLocales.put("bg", "bulgarian, bg, bg_BG");
         dateLocales.put("cn", "zh_CN.UTF-8, cn, zh");
         dateLocales.put("cs", "cs_CZ.windows-1250, czech, cs");
@@ -651,7 +660,7 @@ public class LangFile {
     }
 
     private HashMap<String,String> getWysiwygLang() {
-        HashMap<String,String> wysiwygLang = new HashMap<String,String>();
+        HashMap<String,String> wysiwygLang = new HashMap<>();
         wysiwygLang.put("bg", "en");
         wysiwygLang.put("cn", "en");
         wysiwygLang.put("cs", "cs-win");
@@ -685,7 +694,7 @@ public class LangFile {
     }
 
     private HashMap<String,String> getUTFWysiwygLang() {
-        HashMap<String,String> wysiwygLang = new HashMap<String,String>();
+        HashMap<String,String> wysiwygLang = new HashMap<>();
         wysiwygLang.put("bg", "en");
         wysiwygLang.put("cn", "en");
         wysiwygLang.put("cs", "cs-utf");
@@ -719,7 +728,7 @@ public class LangFile {
     }
 
     private HashMap<String,String> getUTFLocales() {
-        HashMap<String,String> dateLocales = new HashMap<String,String>();
+        HashMap<String,String> dateLocales = new HashMap<>();
         dateLocales.put("bg", "bulgarian, bg, bg_BG");
         dateLocales.put("cn", "zh_CN.UTF-8, cn, zh");
         dateLocales.put("cs", "cs_CZ.UTF-8, czech, cs");
@@ -753,31 +762,33 @@ public class LangFile {
     }
 
     private String getSystemKeyValue(String key) {
-        if (key.equals("LANG_CHARSET")) {
-            return getCharsetName();
-        } else if (key.equals("SQL_CHARSET")) {
-            return getSqlCharsets().get(language);
-        } else if (key.equals("DATE_LOCALES")) {
-            return getDateLocales().get(language);
-        } else if (key.equals("WYSIWYG_LANG")) {
-            return getWysiwygLang().get(language);
-        } else {
-            throw new IllegalArgumentException("Key must be one of system keys. Is: " + key);
+        switch (key) {
+            case "LANG_CHARSET":
+                return getCharsetName();
+            case "SQL_CHARSET":
+                return getSqlCharsets().get(language);
+            case "DATE_LOCALES":
+                return getDateLocales().get(language);
+            case "WYSIWYG_LANG":
+                return getWysiwygLang().get(language);
+            default:
+                throw new IllegalArgumentException("Key must be one of system keys. Is: " + key);
         }
 
     }
 
     private String getUTFSystemKeyValue(String key) {
-        if (key.equals("LANG_CHARSET")) {
-            return "UTF-8";
-        } else if (key.equals("SQL_CHARSET")) {
-            return "utf8";
-        } else if (key.equals("DATE_LOCALES")) {
-            return getUTFLocales().get(language);
-        } else if (key.equals("WYSIWYG_LANG")) {
-            return getUTFWysiwygLang().get(language);
-        } else {
-            throw new IllegalArgumentException("Key must be one of system keys. Is: " + key);
+        switch (key) {
+            case "LANG_CHARSET":
+                return "UTF-8";
+            case "SQL_CHARSET":
+                return "utf8";
+            case "DATE_LOCALES":
+                return getUTFLocales().get(language);
+            case "WYSIWYG_LANG":
+                return getUTFWysiwygLang().get(language);
+            default:
+                throw new IllegalArgumentException("Key must be one of system keys. Is: " + key);
         }
 
     }

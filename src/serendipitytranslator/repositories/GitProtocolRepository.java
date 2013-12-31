@@ -212,7 +212,7 @@ public class GitProtocolRepository extends AbstractUpdatableRepository {
                                             .build();
 
             // update repository if not updated yet
-            if (!repoUpdated) {
+            if (!repoUpdated) {                
                 Git git = new Git(repository);
                 final PullCommand pull = git.pull();
                 //pull.setTimeout(10);
